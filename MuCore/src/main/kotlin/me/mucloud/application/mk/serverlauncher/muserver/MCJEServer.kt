@@ -40,6 +40,10 @@ class MCJEServer(
     private var port: Int,
     private var env: JavaEnvironment,
 ){
+    companion object {
+        const val SERVER_META_FILE = "MK-ServerLauncher.json"
+        const val LEGACY_SERVER_META_FILE = "MuServer.json"
+    }
     private var location: File = File(MuCoreMini.getMuCoreConfig().getServerFolder(), name)
     private var status: ServerStatus = ServerStatus.STOPPED
     private val totalFailCount: Int = 0
@@ -208,7 +212,7 @@ class MCJEServer(
     fun getBeforeWorks(): List<String> = beforeWorks
 
     fun save(){
-        FileWriter(File(getFolder(), "MuServer.json").also { if(!it.exists()) it.createNewFile() }, UTF_8).also {
+        FileWriter(File(getFolder(), SERVER_META_FILE).also { if(!it.exists()) it.createNewFile() }, UTF_8).also {
             it.write(GsonBuilder().setPrettyPrinting().create().toJson(this))
             it.flush()
         }

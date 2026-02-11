@@ -4,6 +4,8 @@ import com.google.gson.GsonBuilder
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.info
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
+import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer.Companion.LEGACY_SERVER_META_FILE
+import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer.Companion.SERVER_META_FILE
 import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.UNKNOWN
 import java.io.File
 import java.io.FileReader
@@ -41,7 +43,8 @@ object ServerPool {
 
     fun removeServer(name: String): Boolean{
         val target = getServer(name) ?: return false
-        File(target.getFolder(), "MK-ServerLauncher.json").deleteRecursively()
+        File(target.getFolder(), SERVER_META_FILE).deleteRecursively()
+        File(target.getFolder(), LEGACY_SERVER_META_FILE).deleteRecursively()
         Pool.remove(target)
         return true
     }
@@ -63,7 +66,8 @@ object ServerPool {
         MuCoreMini.getMuCoreConfig().getServerFolder().listFiles().forEach fl@{ f ->
             if(f.isDirectory){
                 info("Searching Directory >> $f")
-                val target = f.listFiles().find { sf -> sf.name == "MK-ServerLauncher.json" }
+                val target = f.listFiles().find { sf -> sf.name == SERVER_META_FILE }
+                    ?: f.listFiles().find { sf -> sf.name == LEGACY_SERVER_META_FILE }
                 if(target == null){
                     warn("Skipped")
                 }else{
