@@ -16,11 +16,6 @@
 <img alt="Static Badge" src="https://img.shields.io/badge/ElementPlus-2.9.10-gray?style=flat&logoColor=white&labelColor=blue">
 </div><br/>
 
-<div align="center">
-<img alt="Static Badge" src="https://img.shields.io/badge/KMP-2.1.21-gray?style=flat&logo=kotlin&logoColor=white&labelColor=purple">
-<img alt="Static Badge" src="https://img.shields.io/badge/CMP-1.8.1-gray?style=flat&logo=kotlin&logoColor=white&labelColor=purple">
-</div><br/>
-
 ---
 
 <div align="center">
@@ -35,5 +30,8 @@
 
 ---
 
-## 关于该项目的后续路线 | About Project
-基于当前的开发进度 ~其实是我脑死了~ ，MK-ServerLauncher 将分线进行，master 分支仅对于 Minecraft Dedicated Server 进行开发，同时项目将产生新分支 GenericPlatform_V1 用于将其通用化以使其支持更多其他游戏的 Dedicated Server
+## 关于该项目的后续路线 | About Project  
+基于当前的开发进度 ~其实是我脑死了~   
+MK-ServerLauncher 项目将只专注于基于 Ktor 的全平台实现，且仅对于 Minecraft Dedicated Server 进行开发  
+原有的 DPE 模块与 GenericPlatform_V1 分支将被取消并清除  
+届时会有新项目代替 DPE（桌面版本），GPE（通用化版本）用于将其桌面化或通用化以使其支持更多其他游戏的 Dedicated Server  
