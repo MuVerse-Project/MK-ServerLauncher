@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -14,9 +15,11 @@ import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.err
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
+import java.io.BufferedWriter
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.LocalDateTime
 import java.util.*
@@ -42,28 +45,60 @@ class MCJEServer(
     private val totalFailCount: Int = 0
     private val totalPassCount: Int = 0
     private val dataFlow = MutableSharedFlow<JsonObject>()
+    private val ioScope = CoroutineScope(Dispatchers.IO)
     private var beforeWorks: MutableList<String> = mutableListOf()
     private lateinit var config: MCJEServerConfig
 
-    private lateinit var ServerProcess: Process
+    private lateinit var serverProcess: Process
+    private var processWriter: BufferedWriter? = null
+    private var stdoutJob: Job? = null
+    private var stderrJob: Job? = null
+    private var lastLaunchAt: LocalDateTime? = null
 
     init{
         if(!location.exists()){
             location.mkdirs()
         }
+        config = MCJEServerConfig()
         config.load()
     }
 
     // Verify the availability of the MCJEServer
-    private fun verify(){
-        if(!location.exists()){
-            runBlocking { dataFlow.emit(TODO()) }
+    private fun verify(): Boolean {
+        if(!location.exists() && !location.mkdirs()){
+            emit("console.out:error", "Server folder is unavailable: ${location.absolutePath}")
+            status = ServerStatus.IN_ERROR
+            return false
         }
+        return true
     }
 
     fun deploy(){
-        // todo: Deploy Task
-        config = MCJEServerConfig()
+        try {
+            val core = type.getServerCore(version)
+            val target = getFolder().resolve("core.jar")
+            if (core.absolutePath != target.absolutePath) {
+                target.parentFile?.mkdirs()
+                core.copyTo(target, overwrite = true)
+            }
+            val eula = getFolder().resolve("eula.txt")
+            if (!eula.exists()) {
+                eula.writeText("eula=true\n", UTF_8)
+            }
+            config = MCJEServerConfig().also { it.load() }
+        } catch (e: Exception) {
+            status = ServerStatus.IN_ERROR
+            emit("console.out:error", "Deploy failed: ${e.message ?: "Unknown Error"}")
+        }
+    }
+
+    private fun emit(type: String, msg: String) {
+        runBlocking {
+            dataFlow.emit(JsonObject().apply {
+                addProperty("type", type)
+                addProperty("msg", msg)
+            })
+        }
     }
 
     // Before Tasks.
@@ -71,54 +106,86 @@ class MCJEServer(
     fun regBeforeWork(vararg work: String) = beforeWorks.addAll(work)
 
     fun runBeforeWorks(){
-        beforeWorks.forEach { be ->
+        beforeWorks.forEachIndexed { index, be ->
             try {
-                ServerProcess = Runtime.getRuntime().exec(be).apply {
-                    errorStream.bufferedReader().forEachLine { l ->
-                        runBlocking {
-                            dataFlow.emit(JsonObject().also { j ->
-                                j.addProperty("type", "console.out:before_work")
-                                j.add("data", JsonObject().also { data ->
-                                    data.addProperty("index", beforeWorks.indexOf(be))
-                                    data.addProperty("msg", l)
-                                })
+                val process = Runtime.getRuntime().exec(be)
+                process.errorStream.bufferedReader().forEachLine { l ->
+                    runBlocking {
+                        dataFlow.emit(JsonObject().also { j ->
+                            j.addProperty("type", "console.out:before_work")
+                            j.add("data", JsonObject().also { data ->
+                                data.addProperty("index", index)
+                                data.addProperty("msg", l)
                             })
-                        }
+                        })
                     }
                 }
             }catch (e: Exception) {
-                CoroutineScope(Dispatchers.IO).launch { dataFlow.emit(TODO()) }
+                emit("console.out:before_work_err", e.message ?: "Unknown Error")
+                status = ServerStatus.IN_ERROR
             }
         }
     }
 
     fun start() {
-        verify()
+        if (status == ServerStatus.RUNNING) return
+        if (!verify()) return
+
         status = ServerStatus.PREPARING
         runBeforeWorks()
-        val cmd = "${env.getAbsoluteExecPath()} -Xms${config.getMinMemory()} -Xmx${config.getMaxMemory()} ${config.getAdditionalVMFlags()} -jar core.jar"
-        ServerProcess = ProcessBuilder(cmd).directory(getFolder()).start().apply {
-            errorStream.bufferedReader(UTF_8).forEachLine { l ->
-                runBlocking {
-                    dataFlow.emit(JsonObject().apply {
-                        addProperty("type", "console.out:info")
-                        addProperty("msg", l)
-                    })
-                }
+        if (status == ServerStatus.IN_ERROR) return
+
+        val command = mutableListOf(
+            env.getAbsoluteExecPath(),
+            "-Xms${config.getMinMemory()}M",
+            "-Xmx${config.getMaxMemory()}M"
+        )
+        val additional = config.getAdditionalVMFlags().trim()
+        if (additional.isNotEmpty()) {
+            command.addAll(additional.split("\\s+").filter { it.isNotBlank() })
+        }
+        command.addAll(listOf("-jar", "core.jar", "nogui"))
+
+        serverProcess = ProcessBuilder(command)
+            .directory(getFolder())
+            .redirectErrorStream(false)
+            .start()
+        processWriter = serverProcess.outputStream.bufferedWriter(UTF_8)
+
+        stdoutJob = ioScope.launch {
+            serverProcess.inputStream?.let { ins ->
+                InputStreamReader(ins, UTF_8).buffered().forEachLine { emit("console.out:info", it) }
             }
         }
+        stderrJob = ioScope.launch {
+            serverProcess.errorStream?.let { ins ->
+                InputStreamReader(ins, UTF_8).buffered().forEachLine { emit("console.out:error", it) }
+            }
+        }
+
+        status = ServerStatus.RUNNING
+        lastLaunchAt = LocalDateTime.now()
     }
 
     fun stop() {
+        if (status != ServerStatus.RUNNING && !::serverProcess.isInitialized) return
         status = ServerStatus.STOPPING
-        ServerProcess.destroy()
-        val comp = ServerProcess.waitFor(5000, TimeUnit.MILLISECONDS)
-        if(comp){
-            status = ServerStatus.STOPPED
-        }else{
-            CoroutineScope(Dispatchers.IO).launch {
-                dataFlow.emit(TODO())
+        try {
+            sendCommand("stop")
+            val completed = serverProcess.waitFor(5000, TimeUnit.MILLISECONDS)
+            if (!completed) {
+                serverProcess.destroy()
             }
+            status = ServerStatus.STOPPED
+        } catch (e: Exception) {
+            status = ServerStatus.IN_ERROR
+            emit("console.out:error", "Stop failed: ${e.message ?: "Unknown Error"}")
+        } finally {
+            stdoutJob?.cancel()
+            stderrJob?.cancel()
+            stdoutJob = null
+            stderrJob = null
+            processWriter = null
         }
     }
 
@@ -136,7 +203,7 @@ class MCJEServer(
     fun getType(): MCJEServerType = type
     fun getEnv(): JavaEnvironment = env
     fun setEnv(env: JavaEnvironment) { this.env = env }
-    fun lastLaunchTime(): LocalDateTime = LocalDateTime.now() // todo now
+    fun lastLaunchTime(): LocalDateTime = lastLaunchAt ?: LocalDateTime.MIN
     fun getConfig(): MCJEServerConfig = config
     fun getBeforeWorks(): List<String> = beforeWorks
 
@@ -148,8 +215,15 @@ class MCJEServer(
     }
 
     fun getServerFlow() = dataFlow
-    fun sendCommand(cmd: String){ TODO("Implementation in iLoveMu") }
-    fun sendMsg(msg: String){ TODO("Implementation in iLoveMu") }
+    fun sendCommand(cmd: String){
+        if (status != ServerStatus.RUNNING || !::serverProcess.isInitialized) return
+        processWriter?.apply {
+            write(cmd)
+            newLine()
+            flush()
+        }
+    }
+    fun sendMsg(msg: String){ sendCommand("say $msg") }
 
     fun sendPacket(mp: MuPacket){
         CoroutineScope(Dispatchers.IO).launch {
