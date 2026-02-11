@@ -48,5 +48,5 @@ plugins {
 
 rootProject.name = "MK-ServerLauncher"
 
-include("Common")
-include("HPE")
+include("MuCore")
+include("MuView")
