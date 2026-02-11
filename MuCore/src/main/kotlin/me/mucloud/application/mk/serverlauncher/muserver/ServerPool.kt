@@ -85,7 +85,9 @@ object ServerPool {
     fun addType(type: MCJEServerType){
         if (ServerTypePool.contains(type)){
             warn("Ambiguous Server Type Detected >> ${type.id}")
+            return
         }
+        ServerTypePool.add(type)
     }
 }
 
