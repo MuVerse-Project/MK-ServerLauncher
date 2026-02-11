@@ -2,6 +2,7 @@ package me.mucloud.application.mk.serverlauncher.common.env
 
 import java.io.File
 import java.io.FileReader
+import java.util.Properties
 
 /**
  * # | MuExtension - MCJEServer
@@ -32,13 +33,15 @@ class JavaEnvironment(
      */
     private fun getReleaseFileContent(): Map<String, String>{
         val releaseFile = File(path).resolve("release")
-        val map = mutableMapOf<String, String>()
-        if(!releaseFile.exists()) return map
-        FileReader(releaseFile).useLines { l ->
-            val split = l.toString().split("=")
-            map.put(split[0], split[1])
+        if(!releaseFile.exists()) return emptyMap()
+
+        return FileReader(releaseFile).use { reader ->
+            Properties().apply { load(reader) }
+                .entries
+                .associate { (k, v) ->
+                    k.toString().trim() to v.toString().trim().removeSurrounding("\"")
+                }
         }
-        return map
     }
 
     /**
