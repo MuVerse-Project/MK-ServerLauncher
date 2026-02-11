@@ -1,15 +1,14 @@
 package me.mucloud.application.mk.serverlauncher.mucore.external
 
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 object MuHTTPClient {
 
     private val instance = OkHttpClient()
-    private val gson = GsonBuilder().setPrettyPrinting().create()
 
     /**
      * # | Utils
@@ -21,8 +20,19 @@ object MuHTTPClient {
      */
     fun getJsonObject(url: String): JsonObject {
         val request = Request.Builder().url(url).build()
-        instance.newCall(request).execute().use { i ->
-            return gson.toJsonTree(i.body.string()).asJsonObject
+        instance.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IllegalStateException("Request failed with HTTP ${response.code}: $url")
+            }
+            val body = response.body?.string()?.trim().orEmpty()
+            if (body.isEmpty()) {
+                throw IllegalStateException("Empty response body: $url")
+            }
+            val jsonElement = JsonParser.parseString(body)
+            if (!jsonElement.isJsonObject) {
+                throw IllegalStateException("Response is not a JSON object: $url")
+            }
+            return jsonElement.asJsonObject
         }
     }
 
@@ -39,8 +49,19 @@ object MuHTTPClient {
      */
     fun getJsonArray(url: String): JsonArray {
         val request = Request.Builder().url(url).build()
-        instance.newCall(request).execute().use { i ->
-            return gson.toJsonTree(i.body.string()).asJsonArray
+        instance.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IllegalStateException("Request failed with HTTP ${response.code}: $url")
+            }
+            val body = response.body?.string()?.trim().orEmpty()
+            if (body.isEmpty()) {
+                throw IllegalStateException("Empty response body: $url")
+            }
+            val jsonElement = JsonParser.parseString(body)
+            if (!jsonElement.isJsonArray) {
+                throw IllegalStateException("Response is not a JSON array: $url")
+            }
+            return jsonElement.asJsonArray
         }
     }
 
