@@ -255,11 +255,19 @@ class MCJEServerConfig(
     server: MCJEServer
 ){
     private val rawServerPropertiesFile: File = server.getFolder().resolve("server.properties")
-    private val rawServerProperties: Properties = Properties().apply { load(rawServerPropertiesFile.reader(StandardCharsets.UTF_8)) }
+    private val rawServerProperties: Properties = Properties().apply {
+        if(rawServerPropertiesFile.exists()){
+            load(rawServerPropertiesFile.reader(StandardCharsets.UTF_8))
+        }
+    }
 
     fun setProperty(key: String, value: String) = rawServerProperties.setProperty(key, value)
     fun delProperty(key: String) = rawServerProperties.remove(key)
-    fun save() = rawServerProperties.store(rawServerPropertiesFile.writer(StandardCharsets.UTF_8), null)
+    fun save() {
+        rawServerPropertiesFile.parentFile?.mkdirs()
+        if(!rawServerPropertiesFile.exists()) rawServerPropertiesFile.createNewFile()
+        rawServerProperties.store(rawServerPropertiesFile.writer(StandardCharsets.UTF_8), null)
+    }
 }
 
 object MCJEServerAdapter: JsonSerializer<MCJEServer>, JsonDeserializer<MCJEServer>{
