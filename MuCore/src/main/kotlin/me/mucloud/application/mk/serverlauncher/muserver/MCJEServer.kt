@@ -172,7 +172,7 @@ class MCJEServer(
     }
 
     fun stop() {
-        if (status != ServerStatus.RUNNING && !::serverProcess.isInitialized) return
+        if (status != ServerStatus.RUNNING || !::serverProcess.isInitialized) return
         status = ServerStatus.STOPPING
         try {
             sendCommand("stop")
@@ -189,6 +189,7 @@ class MCJEServer(
             stderrJob?.cancel()
             stdoutJob = null
             stderrJob = null
+            processWriter?.close()
             processWriter = null
         }
     }
