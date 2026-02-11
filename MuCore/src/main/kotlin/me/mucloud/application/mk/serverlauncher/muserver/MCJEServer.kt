@@ -241,12 +241,13 @@ class MCJEServer(
         private var maxMemory: Int = 1024 // MB, Def
         private var additionalVMFlags: String = ""
 
-        private val serverProperties = Properties().apply { load(FileReader(getFolder().resolve("server.properties"))) }
+        private var serverProperties: Properties = Properties()
         private val rawServerConfig: MutableList<FileConfig> = mutableListOf()
         private val muServerConfig: FileConfig = FileConfig.of(getFolder().resolve("MuServer-Config.yml"))
 
         fun load(){
             initMuServerConfig()
+            initServerProperties()
             initRawServerConfig()
         }
 
@@ -255,9 +256,24 @@ class MCJEServer(
             if(!muserverConfigFile.exists()){
                 muserverConfigFile.createNewFile()
             }
+            muServerConfig.load()
+            minMemory = muServerConfig.getOptional<Int>("vm.minMemory").orElse(minMemory)
+            maxMemory = muServerConfig.getOptional<Int>("vm.maxMemory").orElse(maxMemory)
+            additionalVMFlags = muServerConfig.getOptional<String>("vm.additionalFlags").orElse(additionalVMFlags)
+        }
+
+        private fun initServerProperties(){
+            val serverPropertiesFile = getFolder().resolve("server.properties")
+            if(!serverPropertiesFile.exists()){
+                serverPropertiesFile.createNewFile()
+            }
+            serverProperties = Properties().apply {
+                FileReader(serverPropertiesFile).use { load(it) }
+            }
         }
 
         private fun initRawServerConfig(){
+            rawServerConfig.clear()
             type.getServerCoreSettingsFile().forEach { p ->
                 val targetFile = getFolder().toPath().resolve(p).toFile()
                 if(targetFile.exists()){
@@ -296,11 +312,21 @@ class MCJEServer(
         // MuServer Config
         fun setMuServerProperty(key: String, value: String){
             muServerConfig.set<String>(key, value)
+            when(key){
+                "vm.minMemory" -> minMemory = value.toIntOrNull() ?: minMemory
+                "vm.maxMemory" -> maxMemory = value.toIntOrNull() ?: maxMemory
+                "vm.additionalFlags" -> additionalVMFlags = value
+            }
         }
 
         fun getMuServerConfig(): Config = muServerConfig
         fun delMuServerConfig(key: String){
             muServerConfig.remove<String>(key)
+            when(key){
+                "vm.minMemory" -> minMemory = 1024
+                "vm.maxMemory" -> maxMemory = 1024
+                "vm.additionalFlags" -> additionalVMFlags = ""
+            }
         }
 
         // Server Properties
@@ -313,7 +339,16 @@ class MCJEServer(
         fun getMaxMemory(): Int = maxMemory
         fun getAdditionalVMFlags(): String = additionalVMFlags
         fun save(){
+            muServerConfig.set<Int>("vm.minMemory", minMemory)
+            muServerConfig.set<Int>("vm.maxMemory", maxMemory)
+            muServerConfig.set<String>("vm.additionalFlags", additionalVMFlags)
+            muServerConfig.save()
 
+            rawServerConfig.forEach { it.save() }
+
+            FileWriter(getFolder().resolve("server.properties"), UTF_8).use { writer ->
+                serverProperties.store(writer, "MCJEServer server.properties")
+            }
         }
     }
 
