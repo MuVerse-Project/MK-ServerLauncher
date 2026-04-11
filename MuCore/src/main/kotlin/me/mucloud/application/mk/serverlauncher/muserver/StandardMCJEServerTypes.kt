@@ -1,7 +1,10 @@
 package me.mucloud.application.mk.serverlauncher.muserver
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuHTTPClient
+import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger
+import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.err
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
@@ -14,7 +17,7 @@ object StandardMCJEServerTypes {
     private const val LEAVES_API = "https://api.leavesmc.org/v2/projects/leaves"
 
     private fun downloadToTemp(url: String, prefix: String): File {
-        val dir = File(System.getProperty("java.io.tmpdir"), "mk-serverlauncher/core-cache")
+        val dir = File("cache")
         if (!dir.exists()) dir.mkdirs()
         val target = File(dir, "$prefix-core.jar")
         URL(url).openStream().use { input ->
@@ -26,26 +29,32 @@ object StandardMCJEServerTypes {
     }
 
     val VANILLA = object : MCJEServerType("vanilla", false, "Vanilla", "Vanilla Server Core") {
-        private var tmpMeta: Map<String, URL> = emptyMap()
+        private var tmpMeta: Map<String, String> = emptyMap()
 
         override fun getAvailableVersions(): List<String>{
             val rawVersions = MuHTTPClient.getJsonArray(MOJANG_VERSION_MANIFEST, "versions")
-            tmpMeta = rawVersions.associate{
-                val l = it.asJsonObject
-                l["id"].asString to URL(l["url"].asString)
-            }
+            tmpMeta = rawVersions
+                .filter {
+                    it.asJsonObject.get("type").asString == "release"
+                }.associate{
+                    val l = it.asJsonObject
+                    l["id"].asString to l["url"].asString
+                }
             return tmpMeta.keys.toList()
         }
 
-        override fun getCoreDownloadLink(vercode: String): URL {
-            if(tmpMeta[vercode] != null) {
-                return tmpMeta[vercode]!!
-            }else{
-                throw RuntimeException("Versions not found: $vercode")
+        override fun getCoreFile(vercode: String): File {
+            val targetURL: String? = tmpMeta[vercode]
+            if(targetURL == null) {
+                err("StandardMCJEServerTypeURLFetcher",
+                    "Could not fetch core file: $vercode is invalid.",
+                    throw UnsupportedOperationException()
+                )
             }
+            return downloadToTemp(targetURL, "mcjeserver-vanilla")
         }
 
-        override fun getServerCoreSettingsFile(): List<Path> = emptyList()
+        override fun getSettingFiles(): List<Path> = emptyList()
     }
 
 //    val SPIGOT = object : MCJEServerType("spigot", false, "Spigot", "A Common and widely used Server Code") {
@@ -60,15 +69,15 @@ object StandardMCJEServerTypes {
                 .flatMap { it.asJsonArray.map(JsonElement::getAsString) } // todo: Check Required.
                 .toList()
 
-        override fun getCoreDownloadLink(vercode: String): URL{
+        override fun getCoreFile(vercode: String): File{
             var raw = MuHTTPClient.getJsonObject("$PAPER_API/versions/$vercode/build/latest")
                 .asJsonObject["downloads"]
                 .asJsonObject["url"]
                 .asString
-            return URL(raw)
+            return downloadToTemp(raw, "mcjeserver-paper")
         }
 
-        override fun getServerCoreSettingsFile(): List<Path> = emptyList() // todo: PaperSpigot Server Specified Setting File Structure
+        override fun getSettingFiles(): List<Path> = emptyList()
     }
 
     val FOLIA = object : MCJEServerType("folia", false, "Folia", "A High-Performance and Multi-Thread featured Server Code") {
@@ -77,15 +86,15 @@ object StandardMCJEServerTypes {
                 .flatMap { it.asJsonArray.map(JsonElement::getAsString) }
                 .toList()
 
-        override fun getCoreDownloadLink(vercode: String): URL {
+        override fun getCoreFile(vercode: String): File {
             val raw = MuHTTPClient.getJsonObject("$FOLIA_API/versions/$vercode/builds/latest")
                 .asJsonObject["downloads"]
                 .asJsonObject["url"]
                 .asString
-            return URL(raw)
+            return downloadToTemp(raw, "mcjeserver-folia")
         }
 
-        override fun getServerCoreSettingsFile(): List<Path> = emptyList() // todo: Folia Server Specified Setting File Structure
+        override fun getSettingFiles(): List<Path> = emptyList() // todo: Folia Server Specified Setting File Structure
     }
 
     val LEAVES = object : MCJEServerType("leaves", false, "Leaves", "Leaves") {
@@ -94,20 +103,20 @@ object StandardMCJEServerTypes {
                 .map { it.asString }
 
 
-        override fun getCoreDownloadLink(vercode: String): URL {
+        override fun getCoreFile(vercode: String): File {
             val latestBuild = MuHTTPClient.getJsonObject("$LEAVES_API/versions/$vercode")
                 .asJsonObject["builds"]
                 .asJsonArray.toList().last()
-            val raw = "$LEAVES_API/versions/$vercode/application"
-            return URL(raw)
+            val raw = "$LEAVES_API/versions/$vercode/build/$latestBuild/application"
+            return downloadToTemp(raw, "mcjeserver-leaves")
         }
 
-        override fun getServerCoreSettingsFile(): List<Path> = emptyList()
+        override fun getSettingFiles(): List<Path> = emptyList()
     }
 
     val UNKNOWN = object : MCJEServerType("unknown", false, "Unknown", "Unknown") {
         override fun getAvailableVersions(): List<String> = emptyList()
-        override fun getCoreDownloadLink(vercode: String): URL { throw UnsupportedOperationException("UNKNOWN SERVER TYPE IS NOT SUPPORTED!") }
-        override fun getServerCoreSettingsFile(): List<Path> = emptyList()
+        override fun getCoreFile(vercode: String): File { throw UnsupportedOperationException("UNKNOWN SERVER TYPE IS NOT SUPPORTED!") }
+        override fun getSettingFiles(): List<Path> = emptyList()
     }
 }
