@@ -9,13 +9,13 @@ import java.lang.reflect.Type
 object MCJEServerAdapter: JsonSerializer<MCJEServer> {
     override fun serialize(s: MCJEServer, t: Type, c: JsonSerializationContext): JsonElement =
         JsonObject().apply{
-            addProperty("name", s.getName())
-            addProperty("desc", s.getDescription())
-            addProperty("version", s.getVersion())
-            addProperty("type", s.getType().id)
-            addProperty("port", s.getPort())
-            addProperty("env", s.getEnv().name)
-            add("before_works", c.serialize(s.getBeforeWorks()))
-            addProperty("location", s.getFolder().absolutePath)
+            val targetMSI = s.msi
+            val targetMSS = s.mss
+            addProperty("name", targetMSI.name)
+            addProperty("desc", targetMSI.name)
+            addProperty("version", targetMSI.version)
+            addProperty("type", targetMSI.type.id)
+            addProperty("env", targetMSI.env.name)
+            addProperty("status", targetMSS.code)
         }
 }
