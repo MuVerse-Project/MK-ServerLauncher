@@ -1,20 +1,16 @@
-package me.mucloud.application.mk.serverlauncher.mupacket.mucore
+package me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver
 
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
-import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 
 abstract class MuServerPacket(
+    mspInfo: MuServerPacketInfo,
     val targetServer: MCJEServer,
-    type: MuPacketInfo<*>,
-) : AbstractMuPacket(type) {
-
-    fun getServer() = targetServer
-
+) : AbstractMuPacket(mspInfo) {
     final override fun getData(): JsonObject = JsonObject().apply{
-        addProperty("SV_NAME", targetServer.getName())
-        add("SV_OP", getMSPData())
+        addProperty("MS_ID", targetServer.msi.MSID)
+        add("MS_OP", getMSPData())
     }
 
     abstract fun getMSPData(): JsonObject

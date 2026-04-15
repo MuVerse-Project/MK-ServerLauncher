@@ -5,15 +5,15 @@ import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 
 class MuMsgPacket(
-    val status: MuStatus,
+    val status: MuMsgStatus,
     val msg: String,
 ): AbstractMuPacket(
     object: MuPacketInfo<MuMsgPacket> {
         override val pid: String = "mucore.internal:msg"
         override fun fromData(data: JsonObject): MuMsgPacket {
-            val status = data.get("status").asString ?: error("Exception occurred while parsing MuPacket >> Invalid MuStatus")
+            val status = data.get("status").asString ?: error("Exception occurred while parsing MuPacket >> Invalid MuMsgStatus")
             val msg = data.get("msg").asString ?: error("Exception occurred while parsing MuPacket >> Null MSG")
-            return MuMsgPacket(MuStatus.valueOf(status), msg)
+            return MuMsgPacket(MuMsgStatus.valueOf(status), msg)
         }
     }
 ){
