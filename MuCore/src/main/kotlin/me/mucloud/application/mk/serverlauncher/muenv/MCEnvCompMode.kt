@@ -31,7 +31,7 @@ enum class MCEnvCompMode(
     companion object{
         fun get(s: MCJEServer): MCEnvCompMode{
             entries.forEach { mode ->
-                if(mode.pattern.matcher(s.getVersion()).matches()){
+                if(mode.pattern.matcher(s.msi.version).matches()){
                     return mode
                 }
             }
@@ -50,7 +50,7 @@ enum class MCEnvCompMode(
             return list
         }
 
-        fun isRecommendEnv(ms: MCJEServer): Boolean = ms.getEnv().getVersion().code == get(ms).recommendCode
+        fun isRecommendEnv(ms: MCJEServer): Boolean = ms.msi.env.getVersion().code == get(ms).recommendCode
 
         fun hasRecommendEnv(ms: MCJEServer): Boolean = EnvPool.getEnvList().map { env -> env.getVersion().code }.contains(get(ms).recommendCode)
 
@@ -58,7 +58,7 @@ enum class MCEnvCompMode(
             if(hasRecommendEnv(ms)){
                 val env = EnvPool.getEnvList().find { env -> env.getVersion().code == get(ms).recommendCode }
                 if(env != null){
-                    ms.setEnv(env)
+                    ms.msi.env = env
                 }
             }
         }

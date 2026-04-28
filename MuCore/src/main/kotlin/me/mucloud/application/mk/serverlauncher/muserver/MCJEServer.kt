@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.info
+import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerLogPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerPacket
@@ -39,12 +40,11 @@ class MCJEServer(
 
     // MuServer Status
     var mss: ServerStatus by Delegates.observable(ServerStatus.CREATED){ _, prev, current ->
-        info(LOG_PREFIX, "MuServer ${msi.MSID} Status changed from $prev to $current")
+        info(LOG_PREFIX, "MuServer ${msi.msid} Status changed from $prev to $current")
         CoroutineScope(Dispatchers.IO).launch {
             sendPacket(MuServerStatusPacket(this@MCJEServer, current))
         }
-    }
-        private set
+    } ;private set
 
     // MuTasks
     val muTaskPool: MutableList<String> = mutableListOf()
@@ -59,7 +59,7 @@ class MCJEServer(
     lateinit var msc: Configuration
 
     fun deploy() {
-        info(LOG_PREFIX, "MuServer ${msi.MSID} start deploying...")
+        info(LOG_PREFIX, "MuServer ${msi.msid} start deploying...")
 
         val rawCore = msi.type.getCoreFile(msi.version)
         instance.inputStream().copyTo(rawCore.outputStream())
@@ -73,14 +73,14 @@ class MCJEServer(
             store(msl.resolve("eula.txt").writer(), null)
         }
 
-        msc.tryLoad()
+        msc.tryLoad() // TODO(EXP): UnStable Function
     }
 
     fun runMuTasks(){
         muTaskPool.forEach { tsk ->
             val proc = ProcessBuilder(tsk).start()
             proc.errorStream.bufferedReader().use {
-                info("MuServer-${msi.MSID}-MuTask", "Running MuTask.")
+                info("MuServer-${msi.msid}-MuTask", "Running MuTask.")
                 sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, it.readText()))
             }
         }
@@ -112,12 +112,13 @@ class MCJEServer(
     }
 
     data class Info(
-        val MSID: String,
+        val msid: String,
         var name: String,
         val version: String,
         val type: MCJEServerType,
         var desc: String,
         var env: JavaEnvironment,
+        var port: Int,
     )
 
     class StartupConfig(
@@ -129,12 +130,8 @@ class MCJEServer(
         override fun toString(): String = StringBuilder().apply {
             append(" -Xms${minMemory}M")
             append(" -Xmx${maxMemory}M")
-            if(jvmFlag.isNotEmpty()){
-                append(" $jvmFlag")
-            }
-            if(!hasGui){
-                append(" --nogui")
-            }
+            if(jvmFlag.isNotEmpty()) append(" $jvmFlag")
+            if(!hasGui) append(" --nogui")
         }.toString()
     }
 
@@ -142,11 +139,27 @@ class MCJEServer(
         val ms: MCJEServer
     ){
         private val serverProperties: Properties = Properties()
-        private val instances: List<FileConfig> = mutableListOf()
+        private val instances: MutableList<FileConfig> = mutableListOf()
+
+        fun getAvailablePaths2File(): List<File>{
+            val paths: MutableList<File> = mutableListOf()
+            ms.msi.type.getSettingFiles().forEach { p ->
+                val rawPath = ms.msl.resolve(p)
+                if(rawPath.isFile){
+                    paths.add(rawPath)
+                }else{
+                    warn(LOG_PREFIX, "MuServer ${ms.msi.msid} Type Error: Unknown config path $rawPath")
+                }
+            }
+            return paths
+        }
 
         fun tryLoad(){
             serverProperties.load(ms.msl.resolve("server.properties").reader())
 
+            getAvailablePaths2File().forEach { p ->
+                instances.add(FileConfig.of(p))
+            }
         }
     }
 }

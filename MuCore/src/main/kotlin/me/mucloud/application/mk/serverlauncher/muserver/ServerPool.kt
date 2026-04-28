@@ -22,17 +22,19 @@ object ServerPool {
     private val ServerTypePool = mutableListOf<MCJEServerType>()
     private val Pool = mutableListOf<MCJEServer>()
 
+
+
     fun addServer(server: MCJEServer){
         if (validate(server) == 0){
             Pool.add(server)
-            server.save()
+//            server.save()
         }
     }
 
     fun validate(server: MCJEServer): Int {
-        val hasSameName: Boolean = Pool.find { server.getName() == it.getName() } != null
-        val hasSameLocation: Boolean = Pool.find { server.getFolder() == it.getFolder() } != null
-        val hasSamePort: Boolean = Pool.find { server.getPort() == it.getPort() } != null
+        val hasSameName: Boolean = Pool.find { server.msi.name == it.msi.name } != null
+        val hasSameLocation: Boolean = Pool.find { server.msl == it.msl } != null
+        val hasSamePort: Boolean = Pool.find { server.msi.port == it.msi.port } != null
 
         return if(hasSameName){ 1 }
             else if(hasSameLocation){ 2 }
@@ -42,27 +44,27 @@ object ServerPool {
 
     fun delServer(name: String): Boolean{
         val target = getServer(name) ?: return false
-        target.getFolder().deleteRecursively()
+        target.msl.deleteRecursively()
         Pool.remove(target)
         return true
     }
 
     fun removeServer(name: String): Boolean{
         val target = getServer(name) ?: return false
-        File(target.getFolder(), "MK-ServerLauncher.json").deleteRecursively()
+        File(target.msl, "MK-ServerLauncher.json").deleteRecursively()
         Pool.remove(target)
         return true
     }
 
-    fun getServer(name: String): MCJEServer? = Pool.find { name == it.getName() }
+    fun getServer(name: String): MCJEServer? = Pool.find { name == it.msi.name }
 
     fun getServerList(): List<MCJEServer> = Pool
 
     fun getTotalServer(): Int = Pool.size
 
-    fun getOnlineServerCount(): Int = Pool.filter { it.getStatus() == ServerStatus.RUNNING }.size
+    fun getOnlineServerCount(): Int = Pool.filter { it.mss == ServerStatus.RUNNING }.size
 
-    fun getOfflineServerCount(): Int = Pool.filter { it.getStatus() == ServerStatus.STOPPED }.size
+    fun getOfflineServerCount(): Int = Pool.filter { it.mss == ServerStatus.STOPPED }.size
 
     fun getAvailableTypes() = ServerTypePool
 
@@ -81,7 +83,7 @@ object ServerPool {
         }
     }
 
-    fun saveServers(){ Pool.forEach { it.save() } }
+    fun saveServers(){ Pool.forEach { /*it.save()*/ } }
 
     fun getType(id: String): MCJEServerType = ServerTypePool.find { it.id == id } ?: UNKNOWN
 

@@ -9,7 +9,7 @@ abstract class MuServerPacket(
     val targetServer: MCJEServer,
 ) : AbstractMuPacket(mspInfo) {
     final override fun getData(): JsonObject = JsonObject().apply{
-        addProperty("MS_ID", targetServer.msi.MSID)
+        addProperty("MS_ID", targetServer.msi.msid)
         add("MS_OP", getMSPData())
     }
 

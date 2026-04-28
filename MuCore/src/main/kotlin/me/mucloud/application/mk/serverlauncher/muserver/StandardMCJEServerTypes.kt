@@ -1,13 +1,10 @@
 package me.mucloud.application.mk.serverlauncher.muserver
 
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuHTTPClient
-import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.err
 import java.io.File
 import java.net.URL
-import java.nio.file.Path
 
 object StandardMCJEServerTypes {
 
@@ -54,7 +51,7 @@ object StandardMCJEServerTypes {
             return downloadToTemp(targetURL, "mcjeserver-vanilla")
         }
 
-        override fun getSettingFiles(): List<Path> = emptyList()
+        override fun getSettingFiles(): List<String> = emptyList()
     }
 
 //    val SPIGOT = object : MCJEServerType("spigot", false, "Spigot", "A Common and widely used Server Code") {
@@ -77,7 +74,7 @@ object StandardMCJEServerTypes {
             return downloadToTemp(raw, "mcjeserver-paper")
         }
 
-        override fun getSettingFiles(): List<Path> = emptyList()
+        override fun getSettingFiles(): List<String> = emptyList()
     }
 
     val FOLIA = object : MCJEServerType("folia", false, "Folia", "A High-Performance and Multi-Thread featured Server Code") {
@@ -94,7 +91,7 @@ object StandardMCJEServerTypes {
             return downloadToTemp(raw, "mcjeserver-folia")
         }
 
-        override fun getSettingFiles(): List<Path> = emptyList() // todo: Folia Server Specified Setting File Structure
+        override fun getSettingFiles(): List<String> = emptyList() // todo: Folia Server Specified Setting File Structure
     }
 
     val LEAVES = object : MCJEServerType("leaves", false, "Leaves", "Leaves") {
@@ -111,12 +108,12 @@ object StandardMCJEServerTypes {
             return downloadToTemp(raw, "mcjeserver-leaves")
         }
 
-        override fun getSettingFiles(): List<Path> = emptyList()
+        override fun getSettingFiles(): List<String> = emptyList()
     }
 
     val UNKNOWN = object : MCJEServerType("unknown", false, "Unknown", "Unknown") {
         override fun getAvailableVersions(): List<String> = emptyList()
         override fun getCoreFile(vercode: String): File { throw UnsupportedOperationException("UNKNOWN SERVER TYPE IS NOT SUPPORTED!") }
-        override fun getSettingFiles(): List<Path> = emptyList()
+        override fun getSettingFiles(): List<String> = emptyList()
     }
 }

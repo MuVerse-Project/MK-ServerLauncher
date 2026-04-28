@@ -1,7 +1,6 @@
 package me.mucloud.application.mk.serverlauncher.muserver
 
 import java.io.File
-import java.nio.file.Path
 
 /**
  *  MuAPI | MCJEServer Type
@@ -20,5 +19,5 @@ abstract class MCJEServerType(
 ) {
     abstract fun getAvailableVersions(): List<String>
     abstract fun getCoreFile(vercode: String): File
-    abstract fun getSettingFiles(): List<Path>
+    abstract fun getSettingFiles(): List<String>
 }
