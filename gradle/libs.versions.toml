@@ -55,3 +55,4 @@ ktor-pack = [
 
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
+ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
