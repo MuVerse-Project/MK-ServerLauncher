@@ -69,7 +69,13 @@ class JavaEnvironment(
      *
      * @return The executable file of JavaEnvironment, which usually refers to the "java.exe" file
      */
-    fun getAbsoluteExecPath(): String = getExecFolder().resolve("bin/java.exe").absolutePath
+    fun getAbsoluteExecPath(): String {
+        val name = when{
+            System.getProperty("os.name").lowercase().contains("win") -> "java.exe"
+            else -> "java"
+        }
+        return getExecFolder().resolve("bin/$name").absolutePath
+    }
 
     fun checkAvailable(): Boolean = getExecFolder().exists() && Path(getAbsoluteExecPath()).exists()
 }
