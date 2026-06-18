@@ -22,7 +22,6 @@ import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerAdapter
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerType
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerTypeSerializer
 import me.mucloud.application.mk.serverlauncher.muview.mulink.initWebSocket
-import me.mucloud.application.mk.serverlauncher.muview.session.initMuSessionManager
 import me.mucloud.application.mk.serverlauncher.muview.view.initEnvRoute
 import me.mucloud.application.mk.serverlauncher.muview.view.initServerRoute
 import kotlin.time.Duration.Companion.seconds
@@ -105,7 +104,6 @@ fun Application.installPlugins(){
 
 fun Application.module() {
     installPlugins()
-    initMuSessionManager()
     initServerRoute()
     initEnvRoute()
     initWebSocket()
