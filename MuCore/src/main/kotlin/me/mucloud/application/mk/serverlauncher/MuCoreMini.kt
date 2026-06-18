@@ -14,7 +14,7 @@ object MuCoreMini {
     fun start() {
         EnvPool.scanEnv()
         ServerPool.scanServer()
-        SystemMonitor.initMonitor()
+        SystemMonitor.initMonitor(MuCoreConfiguration.getSystemMonitorInterval())
     }
 
     fun stop() {

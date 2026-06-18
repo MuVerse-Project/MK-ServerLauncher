@@ -33,7 +33,7 @@ fun Application.initWebSocket() {
                         MuPacketFactory.toPacket(gson.toJsonTree(raw.readText()).asJsonObject)
                     }
                 }
-                target.getServerFlow().collect {
+                target.msec.collect {
                     sendSerialized(it)
                 }
             }

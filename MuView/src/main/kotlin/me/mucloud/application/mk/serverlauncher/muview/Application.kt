@@ -37,33 +37,10 @@ val gson: Gson = GsonBuilder()
     .also { MuPacketFactory.addMuPacketAdapter(it) }
     .create()
 
-var MuView_Port: Int = 20038
+var MuView_Port: Int = MuCore.getMuCoreConfig().getMuViewPort()
     private set
 
-fun readAndCheckLaunchArgs(args: Array<String>): Boolean{
-    val portArgs = arrayOf("p", "port")
-    if (args.all { it.matches(Regex("^(-[a-zA-Z]+):([a-zA-Z0-9]+)$")) }) {
-        args.forEach { a ->
-            when(a){
-                in portArgs -> a.toIntOrNull().let {
-                    if (it == null){
-                        println("Invalid port, set to default (20038)")
-                    }else{
-                        MuView_Port = it
-                    }
-                }
-                else -> println("Invalid Arg ($a), Ignored.")
-            }
-        }
-        return true
-    }else{
-        println("Wrong Usage: java -jar mksl.jar [-[optionKey]:[optionValue] ...]")
-        return false
-    }
-}
-
-fun main(args: Array<String>) {
-    if (!readAndCheckLaunchArgs(args)) return
+fun main() {
     MuCore.start()
     MuView = embeddedServer(Netty, port = MuView_Port, module = Application::module)
     MuView.addShutdownHook(MuView::stop)
@@ -102,18 +79,18 @@ fun Application.installPlugins(){
     }
 }
 
-fun Application.module() {
-    installPlugins()
-    initServerRoute()
-    initEnvRoute()
-    initWebSocket()
-    initMuView()
-}
-
 fun Application.initMuView(){
     routing {
         singlePageApplication {
             vue("MuView")
         }
     }
+}
+
+fun Application.module() {
+    installPlugins()
+    initServerRoute()
+    initEnvRoute()
+    initWebSocket()
+    initMuView()
 }

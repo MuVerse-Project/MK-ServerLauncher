@@ -13,10 +13,10 @@ import kotlinx.serialization.Serializable
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
 import me.mucloud.application.mk.serverlauncher.muserver.ServerPool
 import java.lang.management.ManagementFactory
+import kotlin.time.Duration
 
 object SystemMonitor{
 
-    private const val INTERVAL: Int = 3 // Seconds
     private var isActive: Boolean = false
     private val MonitorFlow: MutableStateFlow<StatusPacket> = MutableStateFlow(getCurrentStatus())
 
@@ -34,12 +34,12 @@ object SystemMonitor{
         )
     }
 
-    fun initMonitor(){
+    fun initMonitor(interval: Duration){
         isActive = true
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             while(isActive){
                 MonitorFlow.emit(getCurrentStatus())
-                delay(INTERVAL.toLong() * 1000)
+                delay(interval)
             }
         }
     }
