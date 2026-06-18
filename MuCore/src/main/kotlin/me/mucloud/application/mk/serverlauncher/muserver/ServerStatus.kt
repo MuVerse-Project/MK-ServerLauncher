@@ -7,7 +7,8 @@ enum class ServerStatus(val code: Int) {
     RUNNING(3),
     STOPPING(4),
     RESTARTING(5),
-    IN_ERROR(6);
+    IN_ERROR(6),
+    ERROR(7);
 
     override fun toString(): String = code.toString()
 }
