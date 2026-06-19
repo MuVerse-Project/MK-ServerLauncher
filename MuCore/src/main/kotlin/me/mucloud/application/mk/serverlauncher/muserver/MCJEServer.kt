@@ -13,7 +13,11 @@ import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServe
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerStatusPacket
 import java.io.File
+import java.io.PrintWriter
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.properties.Delegates
 
 private const val LOG_PREFIX: String = "MuServer"
@@ -40,10 +44,13 @@ class MCJEServer(
 
     // MuServer Status
     var mss: ServerStatus by Delegates.observable(ServerStatus.CREATED){ _, prev, current ->
-        info(LOG_PREFIX, "MuServer ${msi.msid} Status changed from $prev to $current")
-        CoroutineScope(Dispatchers.IO).launch {
-            sendPacket(MuServerStatusPacket(this@MCJEServer, current))
+        when(prev){
+            ServerStatus.CREATED -> info(LOG_PREFIX, "Deploying ${msi.msid} Server.")
+            ServerStatus.ERROR -> info(LOG_PREFIX, "${msi.msid} has been unlock and change to STOPPED Status. Please check the errors when running MuServer.")
+            ServerStatus.RESTARTING -> info(LOG_PREFIX, "${msi.msid} has been restarted.")
+            else -> info(LOG_PREFIX, "${msi.msid} Status changed from $prev to $current")
         }
+        CoroutineScope(Dispatchers.IO).launch { sendPacket(MuServerStatusPacket(this@MCJEServer, current)) }
     } ;private set
 
     // MuTasks
@@ -53,10 +60,10 @@ class MCJEServer(
     val msec: MutableSharedFlow<MuServerPacket> = MutableSharedFlow()
 
     // Server Process
-    lateinit var msp: Process
+    private lateinit var msp: Process
 
     // Server Configuration
-    lateinit var msc: Configuration
+    private val msc: Configuration = Configuration(this)
 
     fun deploy() {
         info(LOG_PREFIX, "MuServer ${msi.msid} start deploying...")
@@ -73,35 +80,77 @@ class MCJEServer(
             store(msl.resolve("eula.txt").writer(), null)
         }
 
-        msc.tryLoad() // TODO(EXP): UnStable Function
+        msc.tryLoad()
     }
 
-    fun runMuTasks(){
-        muTaskPool.forEach { tsk ->
-            val proc = ProcessBuilder(tsk).start()
-            proc.errorStream.bufferedReader().use {
-                info("MuServer-${msi.msid}-MuTask", "Running MuTask.")
-                sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, it.readText()))
+    fun runMuTasks(): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            muTaskPool.forEach { tsk ->
+                val proc = ProcessBuilder(tsk).start()
+                proc.errorStream.bufferedReader().use {
+                    info("MuServer-${msi.msid}-MuTask", "Running MuTask.")
+                    sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, it.readText()))
+                }
+                if (proc.waitFor() == 0) {
+                    sendPacket(
+                        MuServerLogPacket(
+                            this@MCJEServer,
+                            MuServerLogPacket.LogLevel.INFO,
+                            "MuServer-${msi.msid}-MuTask finished"
+                        )
+                    )
+                } else {
+                    sendPacket(
+                        MuServerLogPacket(
+                            this@MCJEServer,
+                            MuServerLogPacket.LogLevel.ERROR,
+                            "MuServer-${msi.msid}-MuTask encountered an unexpected error!"
+                        )
+                    )
+                }
             }
         }
     }
 
     fun startMuServer(){
-        if(mss == ServerStatus.STOPPED){
+        if(mss == ServerStatus.ERROR){
+            mss = ServerStatus.STOPPED
+        }else if(mss == ServerStatus.STOPPED){
             mss = ServerStatus.PREPARING
-            runMuTasks()
-            msp = ProcessBuilder("${msi.env.getAbsoluteExecPath()} -jar $mssc ${instance.absolutePath}").start()
-            msp.errorStream.bufferedReader().use {
-                sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, it.readText()))
-            }
+            runMuTasks().get()
+            runProcess()
+            mss = ServerStatus.RUNNING
         }
     }
 
-    fun stopMuServer(enforce: Boolean = false){
+    fun stopMuServer(enforce: Boolean = false){ // TDOD: re-check: Need Enforce?
         if(mss == ServerStatus.RUNNING){
             mss = ServerStatus.STOPPING
-            if(enforce) msp.destroy() else msp.onExit()
+            if(enforce) msp.destroy() else {
+                sendMessage("Server Stopping.")
+                sendCommand("stop")
+            }
             mss = ServerStatus.STOPPED
+        }
+    }
+
+    fun restartMuServer(){
+        if(mss == ServerStatus.RUNNING){
+            mss = ServerStatus.RESTARTING
+            sendMessage("Server Restarting.")
+            msp.destroy()
+            runProcess()
+            mss = ServerStatus.RUNNING
+        }
+    }
+
+    fun sendMessage(msg: String){
+        sendCommand("say [MKSL] $msg")
+    }
+
+    fun sendCommand(cmd: String){
+        if(mss == ServerStatus.RUNNING){
+            PrintWriter(msp.outputStream, true).use { pw -> pw.println(cmd) }
         }
     }
 
@@ -109,6 +158,29 @@ class MCJEServer(
         CoroutineScope(Dispatchers.IO).launch {
             msec.emit(packet)
         }
+    }
+
+    private fun runProcess(){
+        msp = ProcessBuilder("${msi.env.getAbsoluteExecPath()} -jar $mssc ${instance.absolutePath}")
+            .directory(msl)
+            .start()
+            .also { p -> p.errorStream.bufferedReader().use { r ->
+                sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, r.readText()))
+            }}
+        msp.onExit()
+            .orTimeout(60, TimeUnit.SECONDS)
+            .thenAccept { p ->
+                if(p.exitValue() == 0){
+                    mss = ServerStatus.STOPPED
+                }else{
+                    mss = ServerStatus.ERROR
+                }
+            }.exceptionally { e ->
+                if(e is TimeoutException){
+                    msp.destroyForcibly()
+                }
+                null
+            }
     }
 
     data class Info(
@@ -140,6 +212,12 @@ class MCJEServer(
     ){
         private val serverProperties: Properties = Properties()
         private val instances: MutableList<FileConfig> = mutableListOf()
+        private val muConfigInstance: FileConfig = FileConfig
+            .builder("MK-ServerLauncher.yml")
+            .autosave()
+            .autoreload()
+            .onFileNotFound { _, _ -> ms.msl.resolve("MK-ServerLauncher.yml").createNewFile() }
+            .build()
 
         fun getAvailablePaths2File(): List<File>{
             val paths: MutableList<File> = mutableListOf()
