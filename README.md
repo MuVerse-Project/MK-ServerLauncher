@@ -11,9 +11,9 @@
 
 <div align="center">
 <img alt="Static Badge" src="https://img.shields.io/badge/Ktor-3.4.0-gray?style=flat&logo=ktor&logoColor=white&labelColor=purple">
-<img alt="Static Badge" src="https://img.shields.io/badge/Vue-3.5.33-gray?style=flat&logo=vue.js&logoColor=white&labelColor=darkgreen">
-<img alt="Static Badge" src="https://img.shields.io/badge/TailwindCSS-4.2.4-gray?style=flat&logo=tailwindcss&logoColor=white&labelColor=blue">
-<img alt="Static Badge" src="https://img.shields.io/badge/ElementPlus-2.13.7-gray?style=flat&logoColor=white&labelColor=blue">
+<img alt="Static Badge" src="https://img.shields.io/badge/Vue-V3-gray?style=flat&logo=vue.js&logoColor=white&labelColor=darkgreen">
+<img alt="Static Badge" src="https://img.shields.io/badge/TailwindCSS-V4-gray?style=flat&logo=tailwindcss&logoColor=white&labelColor=blue">
+<img alt="Static Badge" src="https://img.shields.io/badge/ShadcnVue-V2-gray?style=flat&logo=shadcnui&logoColor=white&labelColor=black">
 </div><br/>
 
 ---
