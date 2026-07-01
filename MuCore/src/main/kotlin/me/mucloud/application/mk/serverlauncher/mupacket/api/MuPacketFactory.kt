@@ -94,6 +94,7 @@ object MuPacketFactory {
      * @param builder Raw Gson Builder
      * @return The Gson Builder [builder] after register
      * @since RainyZone V1 | DEV.1
+     * @suppress Unstable API.
      */
     fun addMuPacketAdapter(builder: GsonBuilder): GsonBuilder = builder.apply {
         registerTypeAdapter(MuPacketInfo::class.java, MuPacketAdapter)
