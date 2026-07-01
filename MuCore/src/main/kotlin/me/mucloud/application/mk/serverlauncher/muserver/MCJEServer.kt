@@ -36,16 +36,13 @@ class MCJEServer(
     // MuServer Startup Config
     val mssc: StartupConfig,
 ){
-    // MuServer Location
-    val msl: File = MuCoreMini.getMuCoreConfig().getServerFolder().resolve(msi.name)
-
     // MuServer Core File
-    val instance: File = msl.resolve("core.jar")
+    val instance: File = msi.msl.resolve("core.jar")
 
     // MuServer Status
     var mss: ServerStatus by Delegates.observable(ServerStatus.CREATED){ _, prev, current ->
         when(prev){
-            ServerStatus.CREATED -> info(LOG_PREFIX, "Deploying ${msi.msid} Server.")
+            ServerStatus.CREATED -> info(LOG_PREFIX, "Deploy ${msi.msid} Server Successfully.")
             ServerStatus.ERROR -> info(LOG_PREFIX, "${msi.msid} has been unlock and change to STOPPED Status. Please check the errors when running MuServer.")
             ServerStatus.RESTARTING -> info(LOG_PREFIX, "${msi.msid} has been restarted.")
             else -> info(LOG_PREFIX, "${msi.msid} Status changed from $prev to $current")
@@ -75,9 +72,9 @@ class MCJEServer(
         stopMuServer(enforce = true)
 
         Properties().apply {
-            load(msl.resolve("eula.txt").reader())
+            load(msi.msl.resolve("eula.txt").reader())
             this["eula"] = "true"
-            store(msl.resolve("eula.txt").writer(), null)
+            store(msi.msl.resolve("eula.txt").writer(), null)
         }
 
         msc.tryLoad()
@@ -126,7 +123,7 @@ class MCJEServer(
     fun stopMuServer(enforce: Boolean = false){ // TDOD: re-check: Need Enforce?
         if(mss == ServerStatus.RUNNING){
             mss = ServerStatus.STOPPING
-            if(enforce) msp.destroy() else {
+            if(enforce) msp.destroyForcibly() else {
                 sendMessage("Server Stopping.")
                 sendCommand("stop")
             }
@@ -162,7 +159,7 @@ class MCJEServer(
 
     private fun runProcess(){
         msp = ProcessBuilder("${msi.env.getAbsoluteExecPath()} -jar $mssc ${instance.absolutePath}")
-            .directory(msl)
+            .directory(msi.msl)
             .start()
             .also { p -> p.errorStream.bufferedReader().use { r ->
                 sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, r.readText()))
@@ -170,10 +167,10 @@ class MCJEServer(
         msp.onExit()
             .orTimeout(60, TimeUnit.SECONDS)
             .thenAccept { p ->
-                if(p.exitValue() == 0){
-                    mss = ServerStatus.STOPPED
+                mss = if(p.exitValue() == 0){
+                    ServerStatus.STOPPED
                 }else{
-                    mss = ServerStatus.ERROR
+                    ServerStatus.ERROR
                 }
             }.exceptionally { e ->
                 if(e is TimeoutException){
@@ -191,6 +188,7 @@ class MCJEServer(
         var desc: String,
         var env: JavaEnvironment,
         var port: Int,
+        val msl: File = MuCoreMini.getMuCoreConfig().getServerFolder().resolve(name)
     )
 
     class StartupConfig(
@@ -216,13 +214,13 @@ class MCJEServer(
             .builder("MK-ServerLauncher.yml")
             .autosave()
             .autoreload()
-            .onFileNotFound { _, _ -> ms.msl.resolve("MK-ServerLauncher.yml").createNewFile() }
+            .onFileNotFound { _, _ -> ms.msi.msl.resolve("MK-ServerLauncher.yml").createNewFile() }
             .build()
 
         fun getAvailablePaths2File(): List<File>{
             val paths: MutableList<File> = mutableListOf()
             ms.msi.type.getSettingFiles().forEach { p ->
-                val rawPath = ms.msl.resolve(p)
+                val rawPath = ms.msi.msl.resolve(p)
                 if(rawPath.isFile){
                     paths.add(rawPath)
                 }else{
@@ -233,7 +231,7 @@ class MCJEServer(
         }
 
         fun tryLoad(){
-            serverProperties.load(ms.msl.resolve("server.properties").reader())
+            serverProperties.load(ms.msi.msl.resolve("server.properties").reader())
 
             getAvailablePaths2File().forEach { p ->
                 instances.add(FileConfig.of(p))

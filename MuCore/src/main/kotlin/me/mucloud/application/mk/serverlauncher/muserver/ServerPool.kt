@@ -22,19 +22,20 @@ object ServerPool {
     private val ServerTypePool = mutableListOf<MCJEServerType>()
     private val Pool = mutableListOf<MCJEServer>()
 
-
-
-    fun addServer(server: MCJEServer){
-        if (validate(server) == 0){
-            Pool.add(server)
-//            server.save()
-        }
+    fun regMuServer(ms: MCJEServer){
+        require(validate(ms.msi) == 0){ "MCJEServer is invalid!" }
+        Pool.add(ms)
+        ms.deploy()
     }
 
-    fun validate(server: MCJEServer): Int {
-        val hasSameName: Boolean = Pool.find { server.msi.name == it.msi.name } != null
-        val hasSameLocation: Boolean = Pool.find { server.msl == it.msl } != null
-        val hasSamePort: Boolean = Pool.find { server.msi.port == it.msi.port } != null
+    fun importMuServer(ms: MCJEServer){
+
+    }
+
+    fun validate(msi: MCJEServer.Info): Int {
+        val hasSameName: Boolean = Pool.find { msi.name == it.msi.name } != null
+        val hasSameLocation: Boolean = Pool.find { msi.msl == it.msi.msl } != null
+        val hasSamePort: Boolean = Pool.find { msi.port == it.msi.port } != null
 
         return if(hasSameName){ 1 }
             else if(hasSameLocation){ 2 }
@@ -42,33 +43,33 @@ object ServerPool {
             else{ 0 }
     }
 
-    fun delServer(name: String): Boolean{
-        val target = getServer(name) ?: return false
-        target.msl.deleteRecursively()
+    fun delMuServer(name: String): Boolean{
+        val target = getMuServer(name) ?: return false
+        target.msi.msl.deleteRecursively()
         Pool.remove(target)
         return true
     }
 
-    fun removeServer(name: String): Boolean{
-        val target = getServer(name) ?: return false
-        File(target.msl, "MK-ServerLauncher.json").deleteRecursively()
+    fun removeMuServer(name: String): Boolean{
+        val target = getMuServer(name) ?: return false
+        File(target.msi.msl, "MK-ServerLauncher.json").deleteRecursively()
         Pool.remove(target)
         return true
     }
 
-    fun getServer(name: String): MCJEServer? = Pool.find { name == it.msi.name }
+    fun getMuServer(name: String): MCJEServer? = Pool.find { name == it.msi.name }
 
-    fun getServerList(): List<MCJEServer> = Pool
+    fun getMuServerList(): List<MCJEServer> = Pool
 
-    fun getTotalServer(): Int = Pool.size
+    fun getTotalMuServer(): Int = Pool.size
 
-    fun getOnlineServerCount(): Int = Pool.filter { it.mss == ServerStatus.RUNNING }.size
+    fun getOnlineMuServerCount(): Int = Pool.filter { it.mss == ServerStatus.RUNNING }.size
 
-    fun getOfflineServerCount(): Int = Pool.filter { it.mss == ServerStatus.STOPPED }.size
+    fun getOfflineMuServerCount(): Int = Pool.filter { it.mss == ServerStatus.STOPPED }.size
 
     fun getAvailableTypes() = ServerTypePool
 
-    fun scanServer(){
+    fun scanMuServer(){
         MuCoreMini.getMuCoreConfig().getServerFolder().listFiles().forEach fl@{ f ->
             if(f.isDirectory){
                 info(LOG_PREFIX, "Searching Directory >> $f")
@@ -83,11 +84,11 @@ object ServerPool {
         }
     }
 
-    fun saveServers(){ Pool.forEach { /*it.save()*/ } }
+    fun saveServers(){ Pool.forEach(TODO()) }
 
     fun getType(id: String): MCJEServerType = ServerTypePool.find { it.id == id } ?: UNKNOWN
 
-    fun addType(type: MCJEServerType){
+    fun regType(type: MCJEServerType){
         if (ServerTypePool.contains(type)){
             warn(LOG_PREFIX, "Ambiguous Server Type Detected >> ${type.id}")
         }

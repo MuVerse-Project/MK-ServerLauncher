@@ -26,7 +26,7 @@ fun Application.initWebSocket() {
         // WebSocket >> Fetch Servers Info Flow
         webSocket("api/v1/server/{server}") {
             val server = call.parameters["server"] ?: return@webSocket call.respond(HttpStatusCode.BadRequest, "Server Not Found.")
-            val target = ServerPool.getServer(server) ?: return@webSocket call.respond(HttpStatusCode.BadRequest, "Server Not Found.")
+            val target = ServerPool.getMuServer(server) ?: return@webSocket call.respond(HttpStatusCode.BadRequest, "Server Not Found.")
             launch {
                 incoming.consumeAsFlow().collect { raw ->
                     if (raw is Frame.Text) {

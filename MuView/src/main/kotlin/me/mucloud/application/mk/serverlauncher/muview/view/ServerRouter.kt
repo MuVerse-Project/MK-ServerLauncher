@@ -26,7 +26,7 @@ fun Application.initServerRoute() {
                 call.respond(ServerPool.getAvailableTypes())
             }
             get("list") {
-                call.respond(ServerPool.getServerList())
+                call.respond(ServerPool.getMuServerList())
             }
             get("delete/{name}") {
                 if (!sp.delServer(
@@ -40,15 +40,15 @@ fun Application.initServerRoute() {
                 call.respond(HttpStatusCode.OK)
             }
             get("start/{name}") {
-                (ServerPool.getServer(
+                (ServerPool.getMuServer(
                     call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                ) ?: return@get call.respond(HttpStatusCode.BadRequest)).start()
+                ) ?: return@get call.respond(HttpStatusCode.BadRequest)).startMuServer()
                 call.respond(HttpStatusCode.OK)
             }
             get("stop/{name}") {
-                (ServerPool.getServer(
+                (ServerPool.getMuServer(
                     call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                ) ?: return@get call.respond(HttpStatusCode.BadRequest)).stop()
+                ) ?: return@get call.respond(HttpStatusCode.BadRequest)).stopMuServer()
                 call.respond(HttpStatusCode.OK)
             }
 
@@ -79,7 +79,7 @@ fun Application.initServerRoute() {
 
                         var type = "Unknown"
                         var version = "Unknown"
-                        val targetServer = ServerPool.getServer(target)
+                        val targetServer = ServerPool.getMuServer(target)
                         if (targetServer != null || !File(targetPath).exists()) {
                             call.respond(HttpStatusCode.BadRequest)
                         } else {

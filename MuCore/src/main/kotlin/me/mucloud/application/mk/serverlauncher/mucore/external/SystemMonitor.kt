@@ -29,7 +29,7 @@ object SystemMonitor{
 
         return StatusPacket(
             SystemStatus(cpuUsage, memoryUsage),
-            ServerStatus(serverPool.getTotalServer(), serverPool.getOnlineServerCount(), serverPool.getOfflineServerCount()),
+            ServerStatus(serverPool.getTotalMuServer(), serverPool.getOnlineMuServerCount(), serverPool.getOfflineMuServerCount()),
             coreInfo
         )
     }
