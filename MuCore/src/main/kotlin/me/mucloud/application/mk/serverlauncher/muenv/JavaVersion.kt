@@ -32,7 +32,7 @@ enum class JavaVersion(
     V23("23", 67),
     V24("24", 68),
     V25("25", 69),
-
+    V26("26", 70),
     ;
 
     override fun toString(): String = code.toString()
