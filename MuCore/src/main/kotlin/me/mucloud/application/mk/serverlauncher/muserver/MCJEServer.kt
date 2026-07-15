@@ -5,6 +5,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.info
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
@@ -14,6 +16,7 @@ import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServe
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerStatusPacket
 import java.io.File
 import java.io.PrintWriter
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -26,7 +29,7 @@ private const val LOG_PREFIX: String = "MuServer"
  * # | MuExtension - MCJEServer
  * ## MC Java Edition Server
  *
- * @since VoidLand V1 | DEV.1
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Cloud
  */
 class MCJEServer(
@@ -37,18 +40,22 @@ class MCJEServer(
     val mssc: StartupConfig,
 ){
     // MuServer Core File
-    val instance: File = msi.msl.resolve("core.jar")
+    private val instance: File = msi.msl.resolve("core.jar")
 
     // MuServer Status
-    var mss: ServerStatus by Delegates.observable(ServerStatus.CREATED){ _, prev, current ->
+    var mss: ServerStatus by Delegates.observable(ServerStatus.CREATING){ _, prev, current ->
         when(prev){
-            ServerStatus.CREATED -> info(LOG_PREFIX, "Deploy ${msi.msid} Server Successfully.")
+            ServerStatus.CREATING -> info(LOG_PREFIX, "Deploy ${msi.msid} Server Successfully.")
             ServerStatus.ERROR -> info(LOG_PREFIX, "${msi.msid} has been unlock and change to STOPPED Status. Please check the errors when running MuServer.")
             ServerStatus.RESTARTING -> info(LOG_PREFIX, "${msi.msid} has been restarted.")
             else -> info(LOG_PREFIX, "${msi.msid} Status changed from $prev to $current")
         }
         CoroutineScope(Dispatchers.IO).launch { sendPacket(MuServerStatusPacket(this@MCJEServer, current)) }
-    } ;private set
+    }; private set
+
+    // MuServer Process Lock
+    var mspl: MuServerProcessLck? = null
+        private set
 
     // MuTasks
     val muTaskPool: MutableList<String> = mutableListOf()
@@ -60,7 +67,7 @@ class MCJEServer(
     private lateinit var msp: Process
 
     // Server Configuration
-    private val msc: Configuration = Configuration(this)
+    val msc: Configuration = Configuration()
 
     fun deploy() {
         info(LOG_PREFIX, "MuServer ${msi.msid} start deploying...")
@@ -160,10 +167,15 @@ class MCJEServer(
     private fun runProcess(){
         msp = ProcessBuilder("${msi.env.getAbsoluteExecPath()} -jar $mssc ${instance.absolutePath}")
             .directory(msi.msl)
+            .redirectOutput(msi.msl.resolve("mksl-${msi.msid}.log"))
             .start()
             .also { p -> p.errorStream.bufferedReader().use { r ->
                 sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, r.readText()))
             }}
+
+        mspl = MuServerProcessLck(msp.pid(), LocalDateTime.now())
+        generateMuServerLock()
+
         msp.onExit()
             .orTimeout(60, TimeUnit.SECONDS)
             .thenAccept { p ->
@@ -180,6 +192,24 @@ class MCJEServer(
             }
     }
 
+    private fun generateMuServerLock(){
+        val lckFile = msi.msl.resolve("mksl.lck")
+        if(!lckFile.exists()) lckFile.createNewFile()
+        lckFile.writeText(Json.encodeToString(mspl))
+    }
+
+    /**
+     * # MuServer Saver
+     *
+     * Save the MuServer Info (not only [MCJEServer.Info]) and Status as File when called.
+     */
+    fun save(){
+        msc.getMuConfigInstance().set<Info>("MS_INF", msi)
+        msc.getMuConfigInstance().set<MuServerProcessLck>("MS_LCK", mspl)
+        msc.getMuConfigInstance().set<StartupConfig>("MS_SC", mssc)
+    }
+
+    @Serializable
     data class Info(
         val msid: String,
         var name: String,
@@ -191,7 +221,14 @@ class MCJEServer(
         val msl: File = MuCoreMini.getMuCoreConfig().getServerFolder().resolve(name)
     )
 
-    class StartupConfig(
+    @Serializable
+    data class MuServerProcessLck(
+        val pid: Long,
+        val startTime: LocalDateTime,
+    )
+
+    @Serializable
+    data class StartupConfig(
         val minMemory: Int,
         val maxMemory: Int,
         val hasGui: Boolean = false,
@@ -205,33 +242,33 @@ class MCJEServer(
         }.toString()
     }
 
-    class Configuration(
-        val ms: MCJEServer
-    ){
+    inner class Configuration{
         private val serverProperties: Properties = Properties()
         private val instances: MutableList<FileConfig> = mutableListOf()
         private val muConfigInstance: FileConfig = FileConfig
-            .builder("MK-ServerLauncher.yml")
+            .builder("MK-ServerLauncher.json")
             .autosave()
             .autoreload()
-            .onFileNotFound { _, _ -> ms.msi.msl.resolve("MK-ServerLauncher.yml").createNewFile() }
+            .onFileNotFound { _, _ -> msi.msl.resolve("MK-ServerLauncher.json").createNewFile() }
             .build()
+
+        fun getMuConfigInstance(): FileConfig = muConfigInstance
 
         fun getAvailablePaths2File(): List<File>{
             val paths: MutableList<File> = mutableListOf()
-            ms.msi.type.getSettingFiles().forEach { p ->
-                val rawPath = ms.msi.msl.resolve(p)
+            msi.type.getSettingFiles().forEach { p ->
+                val rawPath = msi.msl.resolve(p)
                 if(rawPath.isFile){
                     paths.add(rawPath)
                 }else{
-                    warn(LOG_PREFIX, "MuServer ${ms.msi.msid} Type Error: Unknown config path $rawPath")
+                    warn(LOG_PREFIX, "MuServer ${msi.msid} Type Error: Unknown config path $rawPath")
                 }
             }
             return paths
         }
 
         fun tryLoad(){
-            serverProperties.load(ms.msi.msl.resolve("server.properties").reader())
+            serverProperties.load(msi.msl.resolve("server.properties").reader())
 
             getAvailablePaths2File().forEach { p ->
                 instances.add(FileConfig.of(p))
