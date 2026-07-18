@@ -9,6 +9,7 @@ import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes
 import java.io.File
 import java.io.FileReader
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 object ServerPool {
 
@@ -43,8 +44,8 @@ object ServerPool {
             else{ 0 }
     }
 
-    fun delMuServer(name: String): Boolean{
-        val target = getMuServer(name) ?: return false
+    fun delMuServer(msid: String): Boolean{
+        val target = getMuServer(msid) ?: return false
         target.msi.msl.deleteRecursively()
         Pool.remove(target)
         return true
@@ -57,7 +58,7 @@ object ServerPool {
         return true
     }
 
-    fun getMuServer(name: String): MCJEServer? = Pool.find { name == it.msi.name }
+    fun getMuServer(msid: String): MCJEServer? = Pool.find { msid == it.msi.msid }
 
     fun getMuServerList(): List<MCJEServer> = Pool
 
@@ -92,6 +93,14 @@ object ServerPool {
         if (ServerTypePool.contains(type)){
             warn(LOG_PREFIX, "Ambiguous Server Type Detected >> ${type.id}")
         }
+    }
+
+    fun randomMSID(): String {
+        var rawId: String
+        do{
+            rawId = UUID.randomUUID().toString().replace("-", "").substring(0, 8)
+        }while (getMuServer(rawId) != null)
+        return rawId
     }
 }
 
