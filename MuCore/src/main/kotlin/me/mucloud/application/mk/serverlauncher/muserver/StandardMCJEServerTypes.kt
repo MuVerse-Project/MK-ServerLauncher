@@ -25,7 +25,7 @@ object StandardMCJEServerTypes {
         return target
     }
 
-    val VANILLA = object : MCJEServerType("vanilla", false, "Vanilla", "Vanilla Server Core") {
+    val VANILLA = object : MCJEServerType("vanilla", false, "Vanilla", "Minecraft 原生服务器核心") {
         private var tmpMeta: Map<String, String> = emptyMap()
 
         override fun getAvailableVersions(): List<String>{
@@ -42,11 +42,8 @@ object StandardMCJEServerTypes {
 
         override fun getCoreFile(vercode: String): File {
             val targetURL: String? = tmpMeta[vercode]
-            if(targetURL == null) {
-                err("StandardMCJEServerTypeURLFetcher",
-                    "Could not fetch core file: $vercode is invalid.",
-                    throw UnsupportedOperationException()
-                )
+            check(!targetURL.isNullOrBlank()) {
+                err("StandardMCJEServerTypeURLFetcher", "Core file \"$vercode\" does not exist.")
             }
             return downloadToTemp(targetURL, "mcjeserver-vanilla")
         }
@@ -54,13 +51,7 @@ object StandardMCJEServerTypes {
         override fun getSettingFiles(): List<String> = emptyList()
     }
 
-//    val SPIGOT = object : MCJEServerType("spigot", false, "Spigot", "A Common and widely used Server Code") {
-//        override fun getAvailableVersions(): List<String>
-//        override fun getCoreDownloadLink(vercode: String): URL
-//        override fun getServerCoreSettingsFile(): List<Path>
-//    }
-
-    val PAPER = object : MCJEServerType("paper", false, "PaperSpigot", "A High-Performance Server based on Spigot") {
+    val PAPER = object : MCJEServerType("paper", false, "PaperSpigot", "基于 Spigot 分支的高性能服务端核心") {
         override fun getAvailableVersions(): List<String> =
             MuHTTPClient.getJsonArray(PAPER_API, "versions")
                 .flatMap { it.asJsonArray.map(JsonElement::getAsString) } // todo: Check Required.
@@ -77,7 +68,7 @@ object StandardMCJEServerTypes {
         override fun getSettingFiles(): List<String> = emptyList()
     }
 
-    val FOLIA = object : MCJEServerType("folia", false, "Folia", "A High-Performance and Multi-Thread featured Server Code") {
+    val FOLIA = object : MCJEServerType("folia", false, "Folia", "基于 PaperSpigot 的多线程高性能服务器端核心") {
         override fun getAvailableVersions(): List<String> =
             MuHTTPClient.getJsonArray(FOLIA_API, "versions")
                 .flatMap { it.asJsonArray.map(JsonElement::getAsString) }
@@ -94,11 +85,10 @@ object StandardMCJEServerTypes {
         override fun getSettingFiles(): List<String> = emptyList() // todo: Folia Server Specified Setting File Structure
     }
 
-    val LEAVES = object : MCJEServerType("leaves", false, "Leaves", "Leaves") {
+    val LEAVES = object : MCJEServerType("leaves", false, "Leaves", "一个适用于生电服务器的服务端核心") {
         override fun getAvailableVersions(): List<String> =
             MuHTTPClient.getJsonArray(LEAVES_API, "versions")
                 .map { it.asString }
-
 
         override fun getCoreFile(vercode: String): File {
             val latestBuild = MuHTTPClient.getJsonObject("$LEAVES_API/versions/$vercode")
@@ -111,9 +101,12 @@ object StandardMCJEServerTypes {
         override fun getSettingFiles(): List<String> = emptyList()
     }
 
-    val UNKNOWN = object : MCJEServerType("unknown", false, "Unknown", "Unknown") {
+    val UNKNOWN = object : MCJEServerType("unknown", false, "Unknown", "未知") {
         override fun getAvailableVersions(): List<String> = emptyList()
-        override fun getCoreFile(vercode: String): File { throw UnsupportedOperationException("UNKNOWN SERVER TYPE IS NOT SUPPORTED!") }
+        override fun getCoreFile(vercode: String): File {
+            err("StandardMCJEServerTypeURLFetcher", "UNKNOWN SERVER TYPE IS NOT SUPPORTED!")
+            throw UnsupportedOperationException()
+        }
         override fun getSettingFiles(): List<String> = emptyList()
     }
 }
