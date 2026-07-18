@@ -22,14 +22,14 @@ object ServerPool {
     private val ServerTypePool = mutableListOf<MCJEServerType>()
     private val Pool = mutableListOf<MCJEServer>()
 
-    fun regMuServer(ms: MCJEServer){
+    fun importMuServer(ms: MCJEServer){
         require(validate(ms.msi) == 0){ "MCJEServer is invalid!" }
         Pool.add(ms)
-        ms.deploy()
     }
 
-    fun importMuServer(ms: MCJEServer){
-
+    fun regMuServer(ms: MCJEServer){
+        importMuServer(ms)
+        ms.deploy()
     }
 
     fun validate(msi: MCJEServer.Info): Int {
@@ -84,7 +84,7 @@ object ServerPool {
         }
     }
 
-    fun saveServers(){ Pool.forEach(TODO()) }
+    fun saveServers() = Pool.forEach(MCJEServer::save)
 
     fun getType(id: String): MCJEServerType = ServerTypePool.find { it.id == id } ?: UNKNOWN
 
