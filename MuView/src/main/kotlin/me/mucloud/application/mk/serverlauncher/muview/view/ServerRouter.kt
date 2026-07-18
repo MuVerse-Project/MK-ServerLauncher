@@ -21,7 +21,6 @@ fun Application.initServerRoute() {
             MuView.stop()
         }
         route("api/v1/server") {
-            val sp = ServerPool
             get("availableType") {
                 call.respond(ServerPool.getAvailableTypes())
             }
@@ -29,12 +28,12 @@ fun Application.initServerRoute() {
                 call.respond(ServerPool.getMuServerList())
             }
             get("delete/{name}") {
-                if (!sp.delServer(
+                if (!ServerPool.delMuServer(
                         call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Server Name Undefined"))
                     ) call.respond(HttpStatusCode.BadRequest, "Server Not Found") else call.respond(HttpStatusCode.OK)
             }
             get("remove/{name}") {
-                ServerPool.removeServer(
+                ServerPool.removeMuServer(
                     call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
                 )
                 call.respond(HttpStatusCode.OK)
@@ -55,33 +54,63 @@ fun Application.initServerRoute() {
             post("create") {
                 call.receive<JsonObject>().also { j ->
                     try {
-                        MCJEServer(
-                            j["name"].asString,
-                            j["version"].asString,
-                            ServerPool.getType(j["type"].asString),
-                            j["desc"].asString,
-                            j["port"].asInt,
-                            EnvPool.getEnv(j["env"].asString)!!
+                        val i = j["msi"].asJsonObject
+                        val c = j["mssc"].asJsonObject
+                        val msi = if(i.has("msl")) {
+                            MCJEServer.Info(
+                                msid = i["msid"].asString,
+                                name = i["name"].asString,
+                                version = i["version"].asString,
+                                type = ServerPool.getType(i["type"].asString),
+                                desc = i["desc"].asString,
+                                env = EnvPool.getEnv(i["evid"].asString) ?: throw Exception("Env Not Found"),
+                                port = i["port"].asInt,
+                                msl = File(i["msl"].asString)
+                            )
+                        }else{
+                            MCJEServer.Info(
+                                msid = i["msid"].asString,
+                                name = i["name"].asString,
+                                version = i["version"].asString,
+                                type = ServerPool.getType(i["type"].asString),
+                                desc = i["desc"].asString,
+                                env = EnvPool.getEnv(i["evid"].asString) ?: throw Exception("Env Not Found"),
+                                port = i["port"].asInt
+                            )
+                        }
+
+                        val mssc = MCJEServer.StartupConfig(
+                            minMemory = c["min_mem"].asInt,
+                            maxMemory = c["max_mem"].asInt,
+                            hasGui = c["gui"].asBoolean,
+                            jvmFlag = c["jvm_flag"].asString,
                         )
+                        check(ServerPool.validate(msi) == 0){ "MuServer Info validation failed" }
+
+                        val rawServer = MCJEServer(msi, mssc)
+                        ServerPool.regMuServer(rawServer)
+
+                        call.respond(HttpStatusCode.OK)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, e.toString())
                         e.printStackTrace()
                     }
-                    call.respond(HttpStatusCode.OK)
                 }
             }
 
             post("import") {
                 call.receive<JsonObject>().also { r ->
                     try {
-                        val target = r["name"].asString
-                        val targetPath = r["path"].asString
+                        val i = r["msi"].asJsonObject
+                        val c = r["mssc"].asJsonObject
 
-                        var type = "Unknown"
-                        var version = "Unknown"
-                        val targetServer = ServerPool.getMuServer(target)
-                        if (targetServer != null || !File(targetPath).exists()) {
-                            call.respond(HttpStatusCode.BadRequest)
+                        val target = i["name"].asString
+                        val targetPath = i["path"].asString
+
+                        val type: String
+                        val version: String
+                        if (!File(targetPath).exists()) {
+                            return@post call.respond(HttpStatusCode.BadRequest)
                         } else {
                             val targetJar = JarFile(File(targetPath))
                             type = targetJar.manifest.mainAttributes["Main-Class"].toString().let {
@@ -105,18 +134,33 @@ fun Application.initServerRoute() {
                                         it.load(targetJar.getInputStream(versionFile))
                                         version = it.getProperty("version")
                                     }
+                                }else{
+                                    version = "Unknown"
                                 }
                             }
                         }
 
-                        MCJEServer(
-                            target, version, ServerPool.getType(type),
-                            r["desc"].asString,
-                            r["port"].asInt,
-                            EnvPool.getEnv(r["env"].asString)!!
-                        ).apply {
-                            save()
-                        }
+                        val msi = MCJEServer.Info(
+                            ServerPool.randomMSID(),
+                            target,
+                            version,
+                            ServerPool.getType(type),
+                            i["desc"].asString,
+                            EnvPool.getEnv(i["evid"].asString) ?: throw Exception("Env Not Found"),
+                            i["port"].asInt,
+                            File(targetPath).parentFile
+                        )
+
+                        val mssc = MCJEServer.StartupConfig(
+                            minMemory = c["min_mem"].asInt,
+                            maxMemory = c["max_mem"].asInt,
+                            hasGui = c["gui"].asBoolean,
+                            jvmFlag = c["jvm_flag"].asString,
+                        )
+
+                        val rawServer = MCJEServer(msi, mssc)
+                        ServerPool.importMuServer(rawServer)
+
                         call.respond(HttpStatusCode.OK)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, e.toString())
