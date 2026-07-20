@@ -23,6 +23,12 @@ object ServerPool {
     private val ServerTypePool = mutableListOf<MCJEServerType>()
     private val Pool = mutableListOf<MCJEServer>()
 
+    init{
+        if(!MuCoreMini.getMuCoreConfig().getServerFolder().exists()){
+            MuCoreMini.getMuCoreConfig().getServerFolder().mkdir()
+        }
+    }
+
     fun importMuServer(ms: MCJEServer){
         require(validate(ms.msi) == 0){ "MCJEServer is invalid!" }
         Pool.add(ms)
