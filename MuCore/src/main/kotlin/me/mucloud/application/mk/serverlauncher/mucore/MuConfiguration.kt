@@ -1,18 +1,20 @@
 package me.mucloud.application.mk.serverlauncher.mucore
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig
+import com.electronwill.nightconfig.core.file.FileConfig
 import java.io.File
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class MuConfiguration{
 
-    private val instance = CommentedFileConfig.builder("MK-ServerLauncher.yaml")
+    private val fileInstance = File("MK-ServerLauncher.yml")
+    private val instance = FileConfig.builder(fileInstance)
         .autosave()
         .autoreload()
         .sync()
-        .defaultResource("MK-ServerLauncher.yaml")
+        .defaultResource("/MK-ServerLauncher.yml")
         .build()
+        .also { it.load() }
 
     private var ServerFolder = File(instance.get<String>("ServerFolder"))
     private var LogFolder = File(instance.get<String>("LogFolder"))
