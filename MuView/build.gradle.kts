@@ -8,7 +8,7 @@ group = "me.mucloud"
 version = "0-beta1"
 
 application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+    mainClass = "me.mucloud.application.mk.serverlauncher.muview.ApplicationKt"
 
     // Development Mode
     val isDevelopment = /*project.ext.has("development")*/ true
