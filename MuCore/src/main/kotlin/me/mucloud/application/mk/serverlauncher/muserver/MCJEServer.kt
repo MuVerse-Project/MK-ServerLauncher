@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
@@ -194,8 +195,15 @@ class MCJEServer(
 
     private fun generateMuServerLock(){
         val lckFile = msi.msl.resolve("mksl.lck")
+        val json = Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true        // 解析时忽略未知字段
+            isLenient = true                // 宽松解析（如允许非引号字符串）
+            encodeDefaults = true           // 编码默认值
+            explicitNulls = false           // 不编码 null 值
+        }
         if(!lckFile.exists()) lckFile.createNewFile()
-        lckFile.writeText(Json.encodeToString(mspl))
+        lckFile.writeText(json.encodeToString(mspl))
     }
 
     /**
@@ -214,17 +222,17 @@ class MCJEServer(
         val msid: String,
         var name: String,
         val version: String,
-        val type: MCJEServerType,
+        @Contextual val type: MCJEServerType,
         var desc: String,
-        var env: JavaEnvironment,
+        @Contextual var env: JavaEnvironment,
         var port: Int,
-        val msl: File = MuCoreMini.getMuCoreConfig().getServerFolder().resolve(name)
+        @Contextual val msl: File = MuCoreMini.getMuCoreConfig().getServerFolder().resolve(name)
     )
 
     @Serializable
     data class MuServerProcessLck(
         val pid: Long,
-        val startTime: LocalDateTime,
+        @Contextual val startTime: LocalDateTime,
     )
 
     @Serializable
