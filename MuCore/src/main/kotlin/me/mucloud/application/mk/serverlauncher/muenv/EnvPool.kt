@@ -33,9 +33,7 @@ object EnvPool {
             envFile.createNewFile()
         }
         scanRuntimeJavaEnv()
-        if (!scanLocalJavaEnv()) {
-            envFile.writeText("[]")
-        }
+        scanLocalJavaEnv()
     }
 
     /**
