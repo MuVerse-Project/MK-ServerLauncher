@@ -11,6 +11,7 @@ dependencies {
 
     implementation(libs.bundles.gson.pack)
     implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutinesSwing)
     implementation(libs.netty.all)
     implementation(libs.okHttp)

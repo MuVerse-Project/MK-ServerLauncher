@@ -12,7 +12,7 @@ gson-extras = { module = "org.danilopianini:gson-extras", version = "3.3.0" }
 
 netty-all = { module = "io.netty:netty-all", version = "4.2.5.Final" }
 okHttp = { module = "com.squareup.okhttp3:okhttp", version = "5.1.0" }
-nightconfig = { module = "com.electronwill.night-config:yaml", version = "3.6.0" }
+nightconfig = { module = "com.electronwill.night-config:yaml", version = "3.9.0" }
 
 slf4jAPI = { module = "org.slf4j:slf4j-api", version = "2.0.17" }
 
@@ -31,6 +31,7 @@ ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = 
 ktor-serialization-gson = { module = "io.ktor:ktor-serialization-gson", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version = "1.8.1" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.1" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
