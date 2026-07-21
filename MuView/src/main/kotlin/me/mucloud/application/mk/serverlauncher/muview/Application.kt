@@ -82,7 +82,9 @@ fun Application.installPlugins(){
 fun Application.initMuView(){
     routing {
         singlePageApplication {
-            vue("MuView")
+            useResources = true
+            filesPath = "muview"
+            defaultPage = "index.html"
         }
     }
 }
