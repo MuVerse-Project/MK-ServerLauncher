@@ -38,10 +38,11 @@ enum class JavaVersion(
     override fun toString(): String = code.toString()
 
     companion object{
-        fun get(env: JavaEnvironment): JavaVersion =
-            entries.find { v -> env.getVersionString().startsWith(v.jVer) } ?: UNKNOWN
+        fun getInstance(env: JavaEnvironment): JavaVersion {
+            return entries.find { v -> env.getVersionString().startsWith(v.jVer) } ?: UNKNOWN
+        }
 
-        fun get(code: Int): JavaVersion = entries.find { it.code == code } ?: UNKNOWN
+        fun getInstance(code: Int): JavaVersion = entries.find { it.code == code } ?: UNKNOWN
 
         fun final() = entries.last()
     }

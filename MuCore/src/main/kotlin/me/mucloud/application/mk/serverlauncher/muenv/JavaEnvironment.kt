@@ -55,7 +55,7 @@ class JavaEnvironment(
      *
      * @return the version of JavaEnvironment as [JavaVersion]
      */
-    fun getVersion(): JavaVersion = JavaVersion.get(this)
+    fun getVersion(): JavaVersion = JavaVersion.getInstance(this)
 
     /**
      * Get the Java Environment Path as [File]

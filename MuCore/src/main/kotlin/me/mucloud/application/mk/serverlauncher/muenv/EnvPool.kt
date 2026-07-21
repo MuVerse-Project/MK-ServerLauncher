@@ -32,8 +32,8 @@ object EnvPool {
         if(!envFile.exists()) {
             envFile.createNewFile()
         }
-        scanRuntimeJavaEnv()
         scanLocalJavaEnv()
+        scanRuntimeJavaEnv()
     }
 
     /**
@@ -45,10 +45,9 @@ object EnvPool {
      *
      * This Function Implementation may change Frequently
      */
-    private fun scanLocalJavaEnv(): Boolean{
-        val sysEnvPath = System.getenv("JAVA_HOME") ?: return false
+    private fun scanLocalJavaEnv(){
+        val sysEnvPath = System.getenv("JAVA_HOME") ?: return
         regEnv(JavaEnvironment("SysEnv", sysEnvPath))
-        return true
     }
 
     private fun scanRuntimeJavaEnv(){
@@ -70,7 +69,9 @@ object EnvPool {
                 envFile.readText(StandardCharsets.UTF_8),
                 object : TypeToken<List<JavaEnvironment>>(){}.type
             ).forEach{ e ->
-                jEnvs.add(e)
+                if(e.name != "Runtime" && e.name != "SysEnv"){
+                    regEnv(e)
+                }
             }
         }
     }
