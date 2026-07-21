@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 
 object MuLogger {
 
-    private val muLogger: Logger = LoggerFactory.getLogger("${MuCoreMini.getMuCoreInfo().core} | ")
+    private val muLogger: Logger = LoggerFactory.getLogger(MuCoreMini.getMuCoreInfo().core)
 
     fun info(logPrefix: String, msg:String){
         muLogger.info("$logPrefix | $msg")
