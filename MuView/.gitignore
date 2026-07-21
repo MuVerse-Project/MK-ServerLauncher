@@ -34,3 +34,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### MuView Builder ###
+/src/main/resources/muview/

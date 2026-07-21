@@ -9,6 +9,15 @@ import { fileURLToPath, URL } from "url";
 
 // https://vite.dev/config/
 export default defineConfig({
+    build: {
+        outDir: '../src/main/resources/muview',
+        emptyOutDir: true,
+    },
+    resolve: {
+        alias: {
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+        },
+    },
     plugins: [
         vue(),
         tailwindcss(),

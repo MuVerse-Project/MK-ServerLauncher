@@ -27,3 +27,39 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation(libs.kotlin.test)
 }
+
+tasks{
+    val shell = if (org.gradle.internal.os.OperatingSystem.current().isWindows) {
+        listOf("cmd", "/c")
+    } else {
+        listOf("bash", "-l", "-c")
+    }
+
+    val installMuView = register<Exec>("installMuView"){
+        description = "Install MuView NPM Environment."
+        commandLine = shell + "npm i"
+        workingDir = projectDir.resolve("view")
+        standardOutput = System.out
+    }
+
+    val buildMuView = register<Exec>("buildMuView"){
+        mustRunAfter(installMuView)
+        description = "Build MuView by NPM Builder."
+        commandLine = shell + "npm run build"
+        workingDir = projectDir.resolve("view")
+        standardOutput = System.out
+    }
+
+    shadowJar{
+        mustRunAfter(buildMuView)
+        isZip64 = true
+    }
+
+    buildFatJar{
+        dependsOn(installMuView, buildMuView)
+    }
+
+    build{
+        dependsOn(installMuView, buildMuView, shadowJar)
+    }
+}

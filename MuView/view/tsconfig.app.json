@@ -5,13 +5,12 @@
 
     // Paths alias
     "allowJs": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@com/*": ["src/components/*"],
-      "@shared/*": ["src/shared/*"],
-      "@api/*": ["src/api/*"],
-      "@route/*": ["src/route/*"],
+      "@/*": ["./src/*"],
+      "@com/*": ["./src/components/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@api/*": ["./src/api/*"],
+      "@route/*": ["./src/route/*"],
     },
 
     /* Linting */
