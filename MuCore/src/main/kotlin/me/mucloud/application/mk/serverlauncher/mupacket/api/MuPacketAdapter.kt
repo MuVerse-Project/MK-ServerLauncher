@@ -23,10 +23,7 @@ object MuPacketAdapter: JsonSerializer<MuPacket>, JsonDeserializer<MuPacket> {
         s: MuPacket,
         t: Type,
         c: JsonSerializationContext
-    ): JsonElement = JsonObject().apply {
-        addProperty("MP_ID", s.getInfo().pid)
-        add("MP_DATA", s.getData())
-    }
+    ): JsonElement = s.toJson()
 
     /**
      * # MuPacket Reader

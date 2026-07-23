@@ -8,7 +8,8 @@ class MuServerStatusPacket(
     targetServer: MCJEServer,
     val newStatus: ServerStatus,
 ): MuServerPacket(object : MuServerPacketInfo("status") {
-    override fun fromData(data: JsonObject): MuServerStatusPacket = throw UnsupportedOperationException("MuServerStatusPacket not supported send to MuPacketReceiver, it should be send to MuView")
+    override fun fromData(data: JsonObject, tss: Long): MuServerStatusPacket =
+        throw UnsupportedOperationException("MuServerStatusPacket not supported send to MuPacketReceiver, it should be send to MuView")
 }, targetServer) {
     override fun getMSPData(): JsonObject = JsonObject().apply {
         addProperty("MSS", newStatus.code)

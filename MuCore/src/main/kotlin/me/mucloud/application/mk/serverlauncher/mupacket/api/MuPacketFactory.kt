@@ -2,9 +2,6 @@ package me.mucloud.application.mk.serverlauncher.mupacket.api
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.MPListeners
-import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.pattern
-import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.toPacket
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -19,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object MuPacketFactory {
     private val pattern: Regex = Regex("^mu(core|view)(\\.[A-Za-z0-9\\-_]{2,})+:([A-Za-z0-9\\-_]{2,})$")
-    private val MPPool: ConcurrentHashMap<String, MuPacketInfo<out MuPacket>> = ConcurrentHashMap()
-    private val MPListeners: ConcurrentHashMap<MuPacketInfo<out MuPacket>, MutableList<MuPacket.() -> Unit>> = ConcurrentHashMap()
+    private val MPPool: ConcurrentHashMap<String, MuPacketInfo<*>> = ConcurrentHashMap()
+    private val MPListeners: ConcurrentHashMap<MuPacketInfo<*>, MutableList<MuPacket.() -> Unit>> = ConcurrentHashMap()
 
     /**
      * ### MuPacket Register
@@ -32,8 +29,8 @@ object MuPacketFactory {
      */
     fun <T : MuPacket> regMuPacket(type: MuPacketInfo<T>) {
         val pid = type.pid
-        require(!MPPool.containsKey(pid)) { "Invalid MuPacket ID: $pid >> Ambiguous MP_ID" }
-        require(pattern.matches(pid)) { "Invalid MuPacket ID: $pid >> Ambiguous MP_ID" }
+        check(!MPPool.containsKey(pid)) { "Invalid MuPacket: $pid >> Ambiguous MP_ID" }
+        check(pattern.matches(pid)) { "Invalid MuPacket: $pid >> Invalid MP_ID" }
         MPPool[pid] = type
     }
 
@@ -47,11 +44,13 @@ object MuPacketFactory {
      * @since RainyZone V1 | DEV.1
      */
     fun toPacket(raw: JsonObject): MuPacket {
-        check(raw.has("MP_ID") && raw.has("MP_DATA")) { "Invalid MuPacket Raw >> Corrupted Raw" }
+        require(raw.has("MP_ID") && raw.has("MP_DATA") && raw.has("TSS")) { "Invalid MuPacket Raw >> Corrupted Raw" }
         val mpid = raw["MP_ID"].asString
         val type = MPPool[mpid] ?: error("Invalid MuPacket Raw >> Unregistered MP_ID ($mpid)")
+        require(raw["MP_DATA"].isJsonObject) { "Invalid MuPacket Raw >> MP_DATA must be an object" }
         val data = raw["MP_DATA"].asJsonObject
-        return type.fromData(data).also { callListeners(type, it) }
+        val tss = raw["TSS"].asLong
+        return type.fromData(data, tss).also { callListeners(type, it) }
     }
 
     /**
@@ -65,7 +64,7 @@ object MuPacketFactory {
      */
     @Suppress("UNCHECKED_CAST")
     fun <T: MuPacket> regMuPacketListener(type: MuPacketInfo<T>, listener: T.() -> Unit) {
-        require(MPPool.containsValue(type)) { "Invalid MuPacket Listener >> Unregistered MuPacket ID: ${type.pid}" }
+        check(MPPool.containsKey(type.pid)) { "Invalid MuPacket Listener >> Unregistered MuPacket ID: ${type.pid}" }
         val target = MPListeners[type] ?: mutableListOf()
         target.add(listener as MuPacket.() -> Unit)
         MPListeners[type] = target
@@ -79,11 +78,7 @@ object MuPacketFactory {
      * @param mp A [MuPacket] for serving its contents.
      * @since RainyZone V1 | DEV.1
      */
-    private fun callListeners(type: MuPacketInfo<out MuPacket>, mp: MuPacket) {
-        if(MPListeners.containsKey(type)) {
-            MPListeners[type]?.forEach { it(mp) }
-        }
-    }
+    private fun callListeners(type: MuPacketInfo<*>, mp: MuPacket) = MPListeners[type]?.forEach { it(mp) }
 
     /**
      * ### MuPacket Gson Adapter Register
@@ -97,6 +92,6 @@ object MuPacketFactory {
      * @suppress Unstable API.
      */
     fun addMuPacketAdapter(builder: GsonBuilder): GsonBuilder = builder.apply {
-        registerTypeAdapter(MuPacketInfo::class.java, MuPacketAdapter)
+        registerTypeAdapter(MuPacket::class.java, MuPacketAdapter)
     }
 }

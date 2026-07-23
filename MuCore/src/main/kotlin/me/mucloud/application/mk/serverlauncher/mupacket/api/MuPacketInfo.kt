@@ -14,7 +14,7 @@ import com.google.gson.JsonObject
  * @since RainyZone V1 | DEV.5
  * @author Mu_Cloud
  */
-interface MuPacketInfo<T : MuPacket> {
+interface MuPacketInfo<out T: MuPacket> {
 
     /**
      * ### MuPacket PID (MP_ID)
@@ -29,5 +29,5 @@ interface MuPacketInfo<T : MuPacket> {
      * @param data The MP_DATA Content as [JsonObject] in the MuPacket
      * @since RainyZone V1 | DEV.5
      */
-    fun fromData(data: JsonObject): T
+    fun fromData(data: JsonObject, tss: Long): T
 }

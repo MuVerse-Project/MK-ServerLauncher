@@ -16,9 +16,10 @@ import com.google.gson.JsonObject
  */
 abstract class AbstractMuPacket(
     protected val type: MuPacketInfo<*>,
+    protected val tss: Long = System.currentTimeMillis(),
 ) : MuPacket {
 
-    final override fun getInfo(): MuPacketInfo<out MuPacket> = type
+    final override fun getInfo(): MuPacketInfo<*> = type
 
     final override fun toJson(): JsonObject = JsonObject().apply {
         addProperty("MP_ID", type.pid)
@@ -26,7 +27,7 @@ abstract class AbstractMuPacket(
         addProperty("TSS", getTimestamp())
     }
 
-    final override fun getTimestamp(): Long = System.currentTimeMillis()
+    final override fun getTimestamp(): Long = tss
 
     abstract override fun getData(): JsonObject
 }
