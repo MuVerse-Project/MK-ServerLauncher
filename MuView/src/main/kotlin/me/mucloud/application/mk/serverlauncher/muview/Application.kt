@@ -1,7 +1,6 @@
 package me.mucloud.application.mk.serverlauncher.muview
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
@@ -29,13 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 val MuCore: MuCoreMini = MuCoreMini
 lateinit var MuView: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>
 
-val gson: Gson = GsonBuilder()
-    .setPrettyPrinting()
-    .registerTypeAdapter(JavaEnvironment::class.java, JavaEnvironmentAdapter)
-    .registerTypeAdapter(MCJEServer::class.java, MCJEServerAdapter)
-    .registerTypeAdapter(MCJEServerType::class.java, MCJEServerTypeSerializer)
-    .also { MuPacketFactory.addMuPacketAdapter(it) }
-    .create()
+val gson: Gson = MuCore.gson
 
 var MuView_Port: Int = MuCore.getMuCoreConfig().getMuViewPort()
     private set
@@ -43,7 +36,7 @@ var MuView_Port: Int = MuCore.getMuCoreConfig().getMuViewPort()
 fun main() {
     MuCore.start()
     MuView = embeddedServer(Netty, port = MuView_Port, module = Application::module)
-    MuView.addShutdownHook(MuView::stop)
+    MuView.addShutdownHook(MuCore::stop)
     MuView.monitor.subscribe(ApplicationStopping) { MuCore.stop() }
     MuView.start(wait = true)
 }
