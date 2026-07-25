@@ -4,22 +4,24 @@ import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 
-class MuMsgPacket(
+open class MuMsgPacket(
+    mspinfo: MuMsgPacketInfo,
     val status: MuMsgStatus,
     val msg: String,
-    tss: Long,
-): AbstractMuPacket(
-    object: MuPacketInfo<MuMsgPacket> {
-        override val pid: String = "mucore.internal:msg"
-        override fun fromData(data: JsonObject, tss: Long): MuMsgPacket {
-            val status = data.get("status").asString ?: error("Exception occurred while parsing MuPacket >> Invalid MuMsgStatus")
-            val msg = data.get("msg").asString ?: error("Exception occurred while parsing MuPacket >> Null MSG")
-            return MuMsgPacket(MuMsgStatus.valueOf(status), msg, tss)
-        }
-    }, tss
-){
+    tss: Long = System.currentTimeMillis(),
+): AbstractMuPacket(mspinfo, tss){
     override fun getData(): JsonObject = JsonObject().apply{
         addProperty("status", status.name)
         addProperty("msg", msg)
     }
 }
+
+class MuMsgInfoPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("info"), MuMsgStatus.INFO, msg)
+
+class MuMsgWarnPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("warn"), MuMsgStatus.WARN, msg)
+
+class MuMsgErrPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("err"), MuMsgStatus.ERR, msg)
+
+class MuMsgOKPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("ok"), MuMsgStatus.OK, msg)
+
+class MuMsgTipPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("tip"), MuMsgStatus.TIP, msg)

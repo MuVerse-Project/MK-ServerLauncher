@@ -7,11 +7,11 @@ class MuServerLogPacket(
     targetServer: MCJEServer,
     val lvl: LogLevel,
     val msg: String,
+    tss: Long = System.currentTimeMillis(),
 ): MuServerPacket(object: MuServerPacketInfo("console.log") {
     override fun fromData(data: JsonObject, tss: Long): MuServerLogPacket =
         throw UnsupportedOperationException("MuServerStatusPacket not supported send to MuPacketReceiver, it should be send to MuView")
-
-}, targetServer) {
+}, targetServer, tss) {
     override fun getMSPData(): JsonObject = JsonObject().apply {
         addProperty("lvl", lvl.name)
         addProperty("msg", msg)

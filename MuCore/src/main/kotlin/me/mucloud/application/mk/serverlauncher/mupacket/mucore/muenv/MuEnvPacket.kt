@@ -7,7 +7,8 @@ import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
 abstract class MuEnvPacket(
     val targetJEnv: JavaEnvironment,
     mepInfo: MuEnvPacketInfo,
-) : AbstractMuPacket(mepInfo) {
+    tss: Long = System.currentTimeMillis(),
+) : AbstractMuPacket(mepInfo, tss) {
     final override fun getData(): JsonObject = JsonObject().apply {
         addProperty("EV_NAME", targetJEnv.name)
         add("EV_OP", getMEPData())
