@@ -7,8 +7,10 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.getValue
 import me.mucloud.application.mk.serverlauncher.muenv.EnvPool
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
+import me.mucloud.application.mk.serverlauncher.muserver.MuServerService
 import me.mucloud.application.mk.serverlauncher.muserver.ServerPool
 import me.mucloud.application.mk.serverlauncher.muview.MuView
 import java.io.File
@@ -22,35 +24,33 @@ fun Application.initServerRoute() {
         }
         route("api/v1/server") {
             get("availableType") {
-                call.respond(ServerPool.getAvailableTypes())
+                call.respond(MuServerService.getAvaliableServerTypes())
             }
             get("list") {
-                call.respond(ServerPool.getMuServerList())
+                call.respond(MuServerService.getServerList())
             }
-            get("delete/{name}") {
-                if (!ServerPool.delMuServer(
-                        call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Server Name Undefined"))
-                    ) call.respond(HttpStatusCode.BadRequest, "Server Not Found") else call.respond(HttpStatusCode.OK)
+            get("delete/{msid}") {
+                val msid: String by call.parameters
+                call.respond(MuServerService.deleteMuServer(msid))
             }
-            get("remove/{name}") {
-                ServerPool.removeMuServer(
-                    call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                )
-                call.respond(HttpStatusCode.OK)
+            get("remove/{msid}") {
+                val msid: String by call.parameters
+                call.respond(MuServerService.removeMuServer(msid))
             }
-            get("start/{name}") {
-                (ServerPool.getMuServer(
-                    call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                ) ?: return@get call.respond(HttpStatusCode.BadRequest)).startMuServer()
-                call.respond(HttpStatusCode.OK)
+            get("start/{msid}") {
+                val msid: String by call.parameters
+                call.respond(MuServerService.startMuServer(msid))
             }
             get("stop/{name}") {
-                (ServerPool.getMuServer(
-                    call.parameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                ) ?: return@get call.respond(HttpStatusCode.BadRequest)).stopMuServer()
-                call.respond(HttpStatusCode.OK)
+                val msid: String by call.parameters
+                call.respond(MuServerService.stopMuServer(msid, false))
+            }
+            get("forcestop/{name}"){
+                val msid: String by call.parameters
+                call.respond(MuServerService.stopMuServer(msid, true))
             }
 
+            // TODO: Simply code
             post("create") {
                 call.receive<JsonObject>().also { j ->
                     try {
@@ -63,7 +63,8 @@ fun Application.initServerRoute() {
                                 version = i["version"].asString,
                                 type = ServerPool.getType(i["type"].asString),
                                 desc = i["desc"].asString,
-                                env = EnvPool.getEnv(i["evid"].asString) ?: throw Exception("Env Not Found"),
+                                env = EnvPool.getEnv(i["evid"].asString)
+                                    .let { if(it.isOk) it.value!! else return@post call.respond(HttpStatusCode.BadRequest, "Env not found") },
                                 port = i["port"].asInt,
                                 msl = File(i["msl"].asString)
                             )
@@ -74,7 +75,8 @@ fun Application.initServerRoute() {
                                 version = i["version"].asString,
                                 type = ServerPool.getType(i["type"].asString),
                                 desc = i["desc"].asString,
-                                env = EnvPool.getEnv(i["evid"].asString) ?: throw Exception("Env Not Found"),
+                                env = EnvPool.getEnv(i["evid"].asString)
+                                    .let { if(it.isOk) it.value!! else return@post call.respond(HttpStatusCode.BadRequest, "Env not found") },
                                 port = i["port"].asInt
                             )
                         }
@@ -85,19 +87,18 @@ fun Application.initServerRoute() {
                             hasGui = c["gui"].asBoolean,
                             jvmFlag = c["jvm_flag"].asString,
                         )
-                        check(ServerPool.validate(msi) == 0){ "MuServer Info validation failed" }
+                        check(ServerPool.validate(msi).isOk){ "MuServer Info validation failed" }
 
                         val rawServer = MCJEServer(msi, mssc)
-                        ServerPool.regMuServer(rawServer)
-
-                        call.respond(HttpStatusCode.OK)
+                        call.respond(MuServerService.createMuServer(rawServer))
                     } catch (e: Exception) {
-                        call.respond(HttpStatusCode.BadRequest, e.toString())
+                        call.respond(HttpStatusCode.InternalServerError, e.toString())
                         e.printStackTrace()
                     }
                 }
             }
 
+            //TODO: Simply code
             post("import") {
                 call.receive<JsonObject>().also { r ->
                     try {
@@ -146,7 +147,8 @@ fun Application.initServerRoute() {
                             version,
                             ServerPool.getType(type),
                             i["desc"].asString,
-                            EnvPool.getEnv(i["evid"].asString) ?: throw Exception("Env Not Found"),
+                            EnvPool.getEnv(i["evid"].asString)
+                                .let { if(it.isOk) it.value!! else return@post call.respond(HttpStatusCode.BadRequest, "Env not found") },
                             i["port"].asInt,
                             File(targetPath).parentFile
                         )
@@ -159,9 +161,7 @@ fun Application.initServerRoute() {
                         )
 
                         val rawServer = MCJEServer(msi, mssc)
-                        ServerPool.importMuServer(rawServer)
-
-                        call.respond(HttpStatusCode.OK)
+                        call.respond(MuServerService.importMuServer(rawServer))
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.BadRequest, e.toString())
                         e.printStackTrace()
