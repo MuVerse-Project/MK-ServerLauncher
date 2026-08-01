@@ -3,6 +3,9 @@ package me.mucloud.application.mk.serverlauncher.muserver
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
+import me.mucloud.application.mk.serverlauncher.mucore.MuResult
+import me.mucloud.application.mk.serverlauncher.mucore.MuStateResult
+import me.mucloud.application.mk.serverlauncher.mucore.MuUtils.any
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.info
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
 import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.UNKNOWN
@@ -29,42 +32,66 @@ object ServerPool {
         }
     }
 
-    fun importMuServer(ms: MCJEServer){
-        require(validate(ms.msi) == 0){ "MCJEServer is invalid!" }
+    fun importMuServer(ms: MCJEServer): MuStateResult{
+        val callback = validate(ms.msi)
+        if(!callback.isOk) return MuStateResult(false, "MCJEServer is invalid: ${callback.msg}")
         Pool.add(ms)
+        return MuStateResult.OK
     }
 
-    fun regMuServer(ms: MCJEServer){
-        importMuServer(ms)
+    fun regMuServer(ms: MCJEServer): MuStateResult{
+        val callback = importMuServer(ms)
+        if(!callback.isOk) return MuStateResult(false, "MCJEServer is invalid: ${callback.msg}")
         ms.deploy()
+        return MuStateResult.OK
     }
 
-    fun validate(msi: MCJEServer.Info): Int {
+    fun validate(msi: MCJEServer.Info): MuStateResult {
         val hasSameName: Boolean = Pool.find { msi.name == it.msi.name } != null
         val hasSameLocation: Boolean = Pool.find { msi.msl == it.msi.msl } != null
         val hasSamePort: Boolean = Pool.find { msi.port == it.msi.port } != null
 
-        return if(hasSameName){ 1 }
-            else if(hasSameLocation){ 2 }
-            else if(hasSamePort){ 3 }
-            else{ 0 }
+        return MuStateResult(
+            any(hasSameName, hasSameLocation, hasSamePort),
+            when{
+                hasSameName -> ""
+                hasSameLocation -> ""
+                hasSamePort -> ""
+                else -> null
+            }
+        )
     }
 
-    fun delMuServer(msid: String): Boolean{
-        val target = getMuServer(msid) ?: return false
+    fun delMuServer(msid: String): MuStateResult{
+        val callback = getMuServer(msid)
+        if(!callback.isOk){
+            return MuStateResult(false, "MCJEServer could not removed: $msid")
+        }
+        val target = callback.value!!
         target.msi.msl.deleteRecursively()
         Pool.remove(target)
-        return true
+        return MuStateResult.OK
     }
 
-    fun removeMuServer(name: String): Boolean{
-        val target = getMuServer(name) ?: return false
+    fun removeMuServer(msid: String): MuStateResult{
+        val callback = getMuServer(msid)
+        if(!callback.isOk){
+            return MuStateResult(false, "MCJEServer could not removed: $msid")
+        }
+        val target = callback.value!!
         File(target.msi.msl, "MK-ServerLauncher.json").deleteRecursively()
         Pool.remove(target)
-        return true
+        return MuStateResult.OK
     }
 
-    fun getMuServer(msid: String): MCJEServer? = Pool.find { msid == it.msi.msid }
+    fun getMuServer(msid: String): MuResult<MCJEServer>{
+        val target = Pool.find { msid == it.msi.msid }
+        return if(target == null){
+            MuResult(false, null, "MCJEServer not found: $msid")
+        }else{
+            MuResult(true, target)
+        }
+    }
 
     fun getMuServerList(): List<MCJEServer> = Pool
 
@@ -105,7 +132,7 @@ object ServerPool {
         var rawId: String
         do{
             rawId = UUID.randomUUID().toString().replace("-", "").substring(0, 8)
-        }while (getMuServer(rawId) != null)
+        }while (!getMuServer(rawId).isOk)
         return rawId
     }
 }

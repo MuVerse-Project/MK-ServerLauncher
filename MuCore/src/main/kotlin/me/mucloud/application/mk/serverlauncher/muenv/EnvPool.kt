@@ -2,6 +2,8 @@ package me.mucloud.application.mk.serverlauncher.muenv
 
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import me.mucloud.application.mk.serverlauncher.mucore.MuResult
+import me.mucloud.application.mk.serverlauncher.mucore.MuStateResult
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
 import me.mucloud.application.mk.serverlauncher.muenv.EnvPool.envFile
 import me.mucloud.application.mk.serverlauncher.muenv.EnvPool.jEnvs
@@ -85,17 +87,30 @@ object EnvPool {
         }
     }
 
-    fun getEnv(name: String) = jEnvs.find { it.name == name }
-
-    fun delEnv(envName: String): Boolean{
-        return jEnvs.removeIf { it.name == envName }.also{ save() }
+    fun getEnv(name: String): MuResult<JavaEnvironment>{
+        val target = jEnvs.find { it.name == name }
+        return if(target == null){
+            MuResult(false, null, "JavaEnvironment not found: $name")
+        }else{
+            MuResult(true, target)
+        }
     }
 
-    fun regEnv(env: JavaEnvironment){
-        val target = jEnvs.find { it.name == env.name || it.getExecFolder() == env.getExecFolder() }
-        if (target == null){
-            if (!jEnvs.add(env)) warn(LOG_PREFIX, "Cannot register the Java Environment in ${env.name} because it has been registered.")
-            save()
+    fun delEnv(envName: String): MuStateResult{
+        val callback = getEnv(envName)
+        return if(!callback.isOk){
+            MuStateResult(false, "Env could not be delated: ${callback.msg}")
+        }else{
+            MuStateResult.OK
+        }
+    }
+
+    fun regEnv(env: JavaEnvironment): MuStateResult{
+        val target = jEnvs.find { it.name == env.name || it.getAbsoluteExecPath() == env.getAbsoluteExecPath() }
+        return if(target != null){
+            MuStateResult(false, "Env could not be registered: Env name or location exists")
+        }else{
+            MuStateResult.OK
         }
     }
 
