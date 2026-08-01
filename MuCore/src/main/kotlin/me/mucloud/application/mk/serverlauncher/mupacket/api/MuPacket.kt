@@ -7,7 +7,7 @@ import com.google.gson.JsonObject
  *
  * The Core Concept of MuPacketAPI
  *
- * @suppress Incubate API, and may be changed in the future. Do not implement directly! Please extend [AbstractMuPacket]
+ * @suppress Unstable API, and may be changed in the future. Do not implement directly! Please extend [AbstractMuPacket]
  * @see AbstractMuPacket
  * @since RainyZone V1 | DEV.1
  * @author Mu_Cloud
@@ -52,11 +52,11 @@ interface MuPacket {
     fun toJson(): JsonObject
 
     /**
-     * ### MuPacket Timestamp
+     * ### MuPacket Call ID
      *
-     * @return The created Time of MuPacket as Millis
+     * @return The Call ID of MuPacket
      * @since RainyZone V1 | DEV.1
      */
-    fun getTimestamp(): Long
+    fun getCallId(): Long
 
 }

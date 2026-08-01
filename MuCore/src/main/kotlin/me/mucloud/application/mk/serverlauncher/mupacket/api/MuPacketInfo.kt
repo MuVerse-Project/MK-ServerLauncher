@@ -29,5 +29,5 @@ interface MuPacketInfo<out T: MuPacket> {
      * @param data The MP_DATA Content as [JsonObject] in the MuPacket
      * @since RainyZone V1 | DEV.5
      */
-    fun fromData(data: JsonObject, tss: Long): T
+    fun fromData(data: JsonObject, cid: Long): T
 }

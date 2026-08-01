@@ -2,14 +2,15 @@ package me.mucloud.application.mk.serverlauncher.mupacket.mucore
 
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
-import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
+import kotlin.random.Random
 
 open class MuMsgPacket(
     mspinfo: MuMsgPacketInfo,
     val status: MuMsgStatus,
     val msg: String,
-    tss: Long = System.currentTimeMillis(),
-): AbstractMuPacket(mspinfo, tss){
+    cid: Long = Random.nextCallId(),
+): AbstractMuPacket(mspinfo, cid){
     override fun getData(): JsonObject = JsonObject().apply{
         addProperty("status", status.name)
         addProperty("msg", msg)

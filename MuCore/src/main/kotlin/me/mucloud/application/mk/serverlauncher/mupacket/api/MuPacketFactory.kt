@@ -3,6 +3,8 @@ package me.mucloud.application.mk.serverlauncher.mupacket.api
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
+import kotlin.random.nextLong
 
 /**
  * # MuPacket API
@@ -44,13 +46,13 @@ object MuPacketFactory {
      * @since RainyZone V1 | DEV.1
      */
     fun toPacket(raw: JsonObject): MuPacket {
-        require(raw.has("MP_ID") && raw.has("MP_DATA") && raw.has("TSS")) { "Invalid MuPacket Raw >> Corrupted Raw" }
+        require(raw.has("MP_ID") && raw.has("MP_DATA") && raw.has("CID")) { "Invalid MuPacket Raw >> Corrupted Raw" }
         val mpid = raw["MP_ID"].asString
         val type = MPPool[mpid] ?: error("Invalid MuPacket Raw >> Unregistered MP_ID ($mpid)")
         require(raw["MP_DATA"].isJsonObject) { "Invalid MuPacket Raw >> MP_DATA must be an object" }
         val data = raw["MP_DATA"].asJsonObject
-        val tss = raw["TSS"].asLong
-        return type.fromData(data, tss).also { callListeners(type, it) }
+        val cid = raw["CID"].asLong
+        return type.fromData(data, cid).also { callListeners(type, it) }
     }
 
     /**
@@ -94,4 +96,6 @@ object MuPacketFactory {
     fun addMuPacketAdapter(builder: GsonBuilder): GsonBuilder = builder.apply {
         registerTypeAdapter(MuPacket::class.java, MuPacketAdapter)
     }
+
+    fun Random.nextCallId(): Long = nextLong(100000000L..999999999L)
 }
