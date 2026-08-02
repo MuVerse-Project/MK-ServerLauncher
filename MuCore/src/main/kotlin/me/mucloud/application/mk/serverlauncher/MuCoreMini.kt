@@ -9,6 +9,20 @@ import me.mucloud.application.mk.serverlauncher.muenv.EnvPool
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironmentAdapter
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgErrPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgInfoPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgOKPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgTipPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgWarnPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv.muEnvInfoPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv.muEnvListPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerInfoPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerListPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerLogPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerStatusPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.muview.createMuServerPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.muview.deleteMuServerPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.muview.importMuServerPacketInfo
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerAdapter
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerType
@@ -28,6 +42,7 @@ object MuCoreMini {
         .create()
 
     fun start() {
+        regMuPackets()
         EnvPool.scanEnv()
         ServerPool.scanMuServer()
         SystemMonitor.initMonitor(MuCoreConfiguration.getSystemMonitorInterval())
@@ -41,5 +56,22 @@ object MuCoreMini {
 
     fun getMuCoreInfo(): AppInfoStatus = MuCoreInfo
     fun getMuCoreConfig(): MuConfiguration = MuCoreConfiguration
+
+    private fun regMuPackets(){
+        MuPacketFactory.regMuPacket(muEnvInfoPacketInfo)
+        MuPacketFactory.regMuPacket(muEnvListPacketInfo)
+        MuPacketFactory.regMuPacket(muServerInfoPacketInfo)
+        MuPacketFactory.regMuPacket(muServerListPacketInfo)
+        MuPacketFactory.regMuPacket(muServerLogPacketInfo)
+        MuPacketFactory.regMuPacket(muServerStatusPacketInfo)
+        MuPacketFactory.regMuPacket(muMsgInfoPacketInfo)
+        MuPacketFactory.regMuPacket(muMsgWarnPacketInfo)
+        MuPacketFactory.regMuPacket(muMsgErrPacketInfo)
+        MuPacketFactory.regMuPacket(muMsgOKPacketInfo)
+        MuPacketFactory.regMuPacket(muMsgTipPacketInfo)
+        MuPacketFactory.regMuPacket(createMuServerPacketInfo)
+        MuPacketFactory.regMuPacket(deleteMuServerPacketInfo)
+        MuPacketFactory.regMuPacket(importMuServerPacketInfo)
+    }
 
 }
