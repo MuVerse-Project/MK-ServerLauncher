@@ -11,4 +11,4 @@ import kotlin.random.Random
 class MuEnvInfoPacket(
     ev: JavaEnvironment,
     cid: Long = Random.nextCallId(),
-): MuMsgPacket(MuMsgPacketInfo("muenv.info"), MuMsgStatus.INFO, gson.toJson(ev), cid)
+): MuMsgPacket(muEnvInfoPacketInfo, MuMsgStatus.INFO, gson.toJson(ev), cid)

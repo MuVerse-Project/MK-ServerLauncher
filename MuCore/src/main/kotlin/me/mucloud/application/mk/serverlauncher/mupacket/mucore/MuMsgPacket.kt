@@ -17,12 +17,14 @@ open class MuMsgPacket(
     }
 }
 
-class MuMsgInfoPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("info"), MuMsgStatus.INFO, msg)
+val muMsgInfoPacketInfo = MuMsgPacketInfo("info")
+val muMsgWarnPacketInfo = MuMsgPacketInfo("warn")
+val muMsgErrPacketInfo = MuMsgPacketInfo("err")
+val muMsgOKPacketInfo = MuMsgPacketInfo("ok")
+val muMsgTipPacketInfo = MuMsgPacketInfo("tip")
 
-class MuMsgWarnPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("warn"), MuMsgStatus.WARN, msg)
-
-class MuMsgErrPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("err"), MuMsgStatus.ERR, msg)
-
-class MuMsgOKPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("ok"), MuMsgStatus.OK, msg)
-
-class MuMsgTipPacket(msg: String): MuMsgPacket(MuMsgPacketInfo("tip"), MuMsgStatus.TIP, msg)
+class MuMsgInfoPacket(msg: String): MuMsgPacket(muMsgInfoPacketInfo, MuMsgStatus.INFO, msg)
+class MuMsgWarnPacket(msg: String): MuMsgPacket(muMsgWarnPacketInfo, MuMsgStatus.WARN, msg)
+class MuMsgErrPacket(msg: String): MuMsgPacket(muMsgErrPacketInfo, MuMsgStatus.ERR, msg)
+class MuMsgOKPacket(msg: String): MuMsgPacket(muMsgOKPacketInfo, MuMsgStatus.OK, msg)
+class MuMsgTipPacket(msg: String): MuMsgPacket(muMsgTipPacketInfo, MuMsgStatus.TIP, msg)

@@ -10,10 +10,7 @@ class MuServerLogPacket(
     val lvl: LogLevel,
     val msg: String,
     cid: Long = Random.nextCallId(),
-): MuServerPacket(object: MuServerPacketInfo("console.log") {
-    override fun fromData(data: JsonObject, cid: Long): MuServerLogPacket =
-        throw UnsupportedOperationException("MuServerStatusPacket not supported send to MuPacketReceiver, it should be send to MuView")
-}, targetServer, cid) {
+): MuServerPacket(muServerLogPacketInfo, targetServer, cid) {
     override fun getMSPData(): JsonObject = JsonObject().apply {
         addProperty("lvl", lvl.name)
         addProperty("msg", msg)

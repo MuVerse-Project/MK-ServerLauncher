@@ -13,4 +13,4 @@ import kotlin.random.Random
 class MuServerInfoPacket(
     ms: MCJEServer,
     cid: Long = Random.nextCallId(),
-): MuMsgPacket(MuMsgPacketInfo("muserver.info"), MuMsgStatus.INFO, gson.toJson(ms), cid)
+): MuMsgPacket(muServerInfoPacketInfo, MuMsgStatus.INFO, gson.toJson(ms), cid)
