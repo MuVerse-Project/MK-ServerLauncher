@@ -22,7 +22,7 @@ object MuServerService {
     }
 
     fun getAvaliableServerTypes(): MuPacket{
-        val target = ServerPool.getMuServerList()
+        val target = ServerPool.getAvailableTypes()
         return MuMsgOKPacket(gson.toJson(target))
     }
 
