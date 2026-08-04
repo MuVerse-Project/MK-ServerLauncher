@@ -17,7 +17,7 @@ import kotlin.random.nextLong
  * @author Mu_Cloud
  */
 object MuPacketFactory {
-    private val pattern: Regex = Regex("^mu(core|view)(\\.[A-Za-z0-9\\-_]{2,})+:([A-Za-z0-9\\-_]{2,})$")
+    private val pattern: Regex = Regex("^mu(core|view)(\\.[A-Za-z0-9\\-_]{2,})+:([A-Za-z0-9\\-_]{2,})(\\.[A-Za-z0-9\\-_]{2,})*$")
     private val MPPool: ConcurrentHashMap<String, MuPacketInfo<*>> = ConcurrentHashMap()
     private val MPListeners: ConcurrentHashMap<MuPacketInfo<*>, MutableList<MuPacket.() -> Unit>> = ConcurrentHashMap()
 
