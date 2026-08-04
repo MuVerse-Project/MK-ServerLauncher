@@ -24,19 +24,6 @@ val createMuServerPacketInfo = object: MuPacketInfo<CreateMuServerPacket>{
     }
 }
 
-val deleteMuServerPacketInfo = object : MuPacketInfo<DeleteMuServerPacket> {
-    override val pid: String = "muview.muserver:delete"
-
-    override fun fromData(data: JsonObject, cid: Long): DeleteMuServerPacket {
-        if(data.has("msid")){
-            val msid = data["msid"].asString
-            return DeleteMuServerPacket(msid, cid)
-        }else{
-            throw UnsupportedOperationException("MSID: ${data["msid"].asString} not provided")
-        }
-    }
-}
-
 val importMuServerPacketInfo = object: MuPacketInfo<CreateMuServerPacket>{
     override val pid: String = "muview.muserver:import"
 
