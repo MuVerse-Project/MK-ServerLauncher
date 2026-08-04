@@ -1,8 +1,8 @@
 package me.mucloud.application.mk.serverlauncher.muserver
 
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
+import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.mucore.MuResult
 import me.mucloud.application.mk.serverlauncher.mucore.MuStateResult
 import me.mucloud.application.mk.serverlauncher.mucore.MuUtils.any
@@ -12,16 +12,11 @@ import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes
 import java.io.File
 import java.io.FileReader
 import java.nio.charset.StandardCharsets
-import java.util.UUID
+import java.util.*
 
 object ServerPool {
 
     private const val LOG_PREFIX = "MuServer.Pool"
-
-    private val gson = GsonBuilder()
-        .setPrettyPrinting()
-        .registerTypeAdapter(MCJEServer::class.java, MCJEServerAdapter)
-        .create()
 
     private val ServerTypePool = mutableListOf<MCJEServerType>()
     private val Pool = mutableListOf<MCJEServer>()

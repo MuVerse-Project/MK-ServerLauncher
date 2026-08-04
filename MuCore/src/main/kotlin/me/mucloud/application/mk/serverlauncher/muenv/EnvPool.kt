@@ -1,7 +1,7 @@
 package me.mucloud.application.mk.serverlauncher.muenv
 
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.mucore.MuResult
 import me.mucloud.application.mk.serverlauncher.mucore.MuStateResult
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
@@ -21,11 +21,6 @@ import java.nio.charset.StandardCharsets
 object EnvPool {
 
     private const val LOG_PREFIX: String = "MuEnv.Pool"
-
-    private val gson = GsonBuilder()
-        .setPrettyPrinting()
-        .registerTypeAdapter(JavaEnvironment::class.java, JavaEnvironmentAdapter)
-        .create()
 
     private val jEnvs: MutableList<JavaEnvironment> = mutableListOf() // In-Memory storage
     private val envFile: File = File("env.json") // Persistent storage file
@@ -110,6 +105,8 @@ object EnvPool {
         return if(target != null){
             MuStateResult(false, "Env could not be registered: Env name or location exists")
         }else{
+            jEnvs.add(env)
+            save()
             MuStateResult.OK
         }
     }

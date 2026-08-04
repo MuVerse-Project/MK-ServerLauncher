@@ -15,6 +15,8 @@ import io.ktor.server.websocket.*
 import me.mucloud.application.mk.serverlauncher.MuCoreMini
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironmentAdapter
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketAdapter
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerAdapter
@@ -57,7 +59,7 @@ fun Application.installPlugins(){
             registerTypeAdapter(JavaEnvironment::class.java, JavaEnvironmentAdapter)
             registerTypeAdapter(MCJEServer::class.java, MCJEServerAdapter)
             registerTypeAdapter(MCJEServerType::class.java, MCJEServerTypeSerializer)
-                .also { MuPacketFactory.addMuPacketAdapter(it) }
+            registerTypeHierarchyAdapter(MuPacket::class.java, MuPacketAdapter)
         }
     }
     install(WebSockets) {

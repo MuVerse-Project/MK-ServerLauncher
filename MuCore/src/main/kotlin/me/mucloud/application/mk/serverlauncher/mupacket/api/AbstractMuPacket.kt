@@ -26,7 +26,7 @@ abstract class AbstractMuPacket(
     final override fun toJson(): JsonObject = JsonObject().apply {
         addProperty("MP_ID", type.pid)
         add("MP_DATA", getData())
-        addProperty("TSS", getCallId())
+        addProperty("CID", getCallId())
     }
 
     final override fun getCallId(): Long = cid

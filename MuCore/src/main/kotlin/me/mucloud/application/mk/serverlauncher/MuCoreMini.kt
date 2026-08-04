@@ -8,6 +8,8 @@ import me.mucloud.application.mk.serverlauncher.mucore.external.SystemMonitor
 import me.mucloud.application.mk.serverlauncher.muenv.EnvPool
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironmentAdapter
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketAdapter
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgErrPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgInfoPacketInfo
@@ -38,7 +40,7 @@ object MuCoreMini {
         .registerTypeAdapter(JavaEnvironment::class.java, JavaEnvironmentAdapter)
         .registerTypeAdapter(MCJEServer::class.java, MCJEServerAdapter)
         .registerTypeAdapter(MCJEServerType::class.java, MCJEServerTypeSerializer)
-        .also { MuPacketFactory.addMuPacketAdapter(it) }
+        .registerTypeHierarchyAdapter(MuPacket::class.java, MuPacketAdapter)
         .create()
 
     fun start() {
