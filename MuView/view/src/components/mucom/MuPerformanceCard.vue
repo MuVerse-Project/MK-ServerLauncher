@@ -73,7 +73,7 @@ let TotalServerCountAnime = useTransition(
 </script>
 
 <template>
-  <card>
+  <card class="w-max-150">
     <card-header>
       <card-title>
         Overview
@@ -81,12 +81,12 @@ let TotalServerCountAnime = useTransition(
     </card-header>
     <card-content>
       <div class="flex flex-col gap-5">
-        <div class="flex flex-row gap-10 justify-between">
+        <div class="flex flex-row not-md:flex-col gap-10 justify-between">
           <div class="flex flex-col gap-y-5 h-full">
             <blockquote class="mt-6 border-l-2 border-black pl-3 font-bold">
               Server
             </blockquote>
-            <div class="flex flex-row gap-5 w-full justify-around items-center">
+            <div class="flex flex-row gap-10 w-full justify-around items-center">
               <div class="flex flex-col text-center text-lg">
                 <span class="mb-3">{{ OnlineServerCountAnime }}</span>
                 <span>Online</span>
@@ -101,7 +101,7 @@ let TotalServerCountAnime = useTransition(
               </div>
             </div>
           </div>
-          <div class="flex flex-col gap-y-5 h-full">
+          <div class="flex flex-col gap-10 h-full">
             <blockquote class="mt-6 border-l-2 border-black pl-3 font-bold">
               Performance
             </blockquote>
