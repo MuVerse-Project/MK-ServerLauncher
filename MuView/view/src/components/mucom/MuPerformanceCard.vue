@@ -81,7 +81,7 @@ let TotalServerCountAnime = useTransition(
     </card-header>
     <card-content>
       <div class="flex flex-col gap-5">
-        <div class="flex flex-row gap-10">
+        <div class="flex flex-row gap-10 justify-between">
           <div class="flex flex-col gap-y-5 h-full">
             <blockquote class="mt-6 border-l-2 border-black pl-3 font-bold">
               Server
