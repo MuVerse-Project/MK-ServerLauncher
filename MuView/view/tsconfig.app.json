@@ -1,0 +1,26 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@muapi/*": ["./src/api/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@router/*": ["./src/router/*"],
+      "@internalViews/*": ["./src/views/*"],
+      "@mucom/*": ["./src/components/mucom/*"],
+      "@shadcn/*": ["./src/components/ui/*"],
+    },
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+
+    /* Linting */
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "erasableSyntaxOnly": true,
+    // "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "src/**/*.vue"],
+
+}

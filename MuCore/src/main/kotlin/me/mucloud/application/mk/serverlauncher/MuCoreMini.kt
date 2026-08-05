@@ -23,7 +23,6 @@ import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServe
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerLogPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerStatusPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.muview.createMuServerPacketInfo
-import me.mucloud.application.mk.serverlauncher.mupacket.muview.deleteMuServerPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.muview.importMuServerPacketInfo
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerAdapter
@@ -72,7 +71,6 @@ object MuCoreMini {
         MuPacketFactory.regMuPacket(muMsgOKPacketInfo)
         MuPacketFactory.regMuPacket(muMsgTipPacketInfo)
         MuPacketFactory.regMuPacket(createMuServerPacketInfo)
-        MuPacketFactory.regMuPacket(deleteMuServerPacketInfo)
         MuPacketFactory.regMuPacket(importMuServerPacketInfo)
     }
 
