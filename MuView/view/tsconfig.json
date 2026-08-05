@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@muapi/*": ["./src/api/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@router/*": ["./src/router/*"],
+      "@internalViews/*": ["./src/views/*"],
+      "@mucom/*": ["./src/components/mucom/*"],
+      "@shadcn/*": ["./src/components/ui/*"],
+    }
+  }
+}
