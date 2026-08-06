@@ -24,8 +24,8 @@ fun Application.initWebSocket() {
         }
 
         // WebSocket >> Fetch Servers Info Flow
-        webSocket("api/v1/server/{server}") {
-            val server = call.parameters["server"] ?: return@webSocket call.respond(HttpStatusCode.BadRequest, "Server Not Found.")
+        webSocket("api/v1/server/{msid}") {
+            val server = call.parameters["msid"] ?: return@webSocket call.respond(HttpStatusCode.BadRequest, "Server Not Found.")
             val callback = ServerPool.getMuServer(server)
             launch {
                 incoming.consumeAsFlow().collect { raw ->
