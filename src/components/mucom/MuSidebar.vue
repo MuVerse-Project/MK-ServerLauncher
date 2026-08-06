@@ -9,7 +9,7 @@ import {
 } from "@shadcn/sidebar"
 import {GalleryVerticalEnd, SquareUserRoundIcon} from "@lucide/vue"
 import {AppInfo} from "@/main.ts"
-import {MuSidebarMenus} from "@router/index.ts"
+import {MuSidebarMenus} from "@/main.ts"
 import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
 </script>
 

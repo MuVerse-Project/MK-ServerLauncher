@@ -5,6 +5,8 @@ import App from '@/App.vue'
 import {router} from '@/router'
 import {createI18n} from "vue-i18n"
 import 'overlayscrollbars/overlayscrollbars.css'
+import 'vue-sonner/style.css'
+import {Home} from "@lucide/vue";
 
 // Define App Info to MuView.
 export const AppInfo = {
@@ -31,6 +33,15 @@ const i18n= createI18n({
     }
   }
 })
+
+// Define MuSidebar Menus
+export const MuSidebarMenus = [
+  {
+    title: "Home",
+    url: "/",
+    icon: Home,
+  },
+]
 
 const app = createApp(App)
 const pinia = createPinia()

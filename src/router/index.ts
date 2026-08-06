@@ -24,11 +24,3 @@ export const router = createRouter({
     },
   ],
 })
-
-export const MuSidebarMenus = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
-]
