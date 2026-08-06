@@ -1,7 +1,7 @@
 {
   "name": "muview",
   "private": true,
-  "version": "0.1.0-TinyNova",
+  "version": "0.1.2-TinyNova",
   "type": "module",
   "scripts": {
     "dev": "vite",
