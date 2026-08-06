@@ -7,10 +7,13 @@ import {
   SidebarGroupLabel, SidebarHeader, SidebarInset,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger
 } from "@shadcn/sidebar"
-import {GalleryVerticalEnd, SquareUserRoundIcon} from "@lucide/vue"
+import {GalleryVerticalEnd, SquareUserRound, Moon, Sun} from "@lucide/vue"
 import {AppInfo} from "@/main.ts"
 import {MuSidebarMenus} from "@/main.ts"
 import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
+import {useColorMode} from "@vueuse/core";
+
+const mode = useColorMode()
 </script>
 
 <template>
@@ -49,11 +52,27 @@ import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
             </SidebarGroupContent>
           </SidebarGroup>
         </OverlayScrollbarsComponent>
+        <SidebarGroup class="mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton v-if="mode == 'light'" @click="mode = 'dark'">
+                  <Moon/>
+                  <span>To Dark</span>
+                </SidebarMenuButton>
+                <SidebarMenuButton v-else @click="mode = 'light'">
+                  <Sun/>
+                  <span>To Light</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter> <!-- MuUser Component -->
         <SidebarMenuButton size="lg">
           <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <SquareUserRoundIcon class="size-4" />
+            <SquareUserRound class="size-4" />
           </div>
           <div class="grid flex-1 text-left text-sm leading-tight">
             <span class="truncate font-semibold">{{ AppInfo.dev.devName }}</span>
@@ -69,7 +88,7 @@ import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
           <SidebarTrigger class="-ml-1" />
         </div>
       </header>
-      <div class="px-5">
+      <div class="flex flex-wrap max-h-dvh gap-5 px-5">
         <slot/>
       </div>
     </SidebarInset>

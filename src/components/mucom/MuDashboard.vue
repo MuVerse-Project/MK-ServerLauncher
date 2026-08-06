@@ -5,15 +5,26 @@ import {computed, type HTMLAttributes, ref} from "vue";
 const props = defineProps<{
   value: number,
   max: number,
+  as: "card" | "plain"
   class?: HTMLAttributes['class']
 }>()
-let value = computed(() => props.value)
-let max = computed(() => props.max)
+
+let value = ref(props.value)
+let max = ref(props.max)
 let percent = computed(() => Math.min((props.value / props.max) * 100, 100).toFixed(2))
+
+let borderClass = computed(() => {
+  if(props.as === "card") {
+    return 'flex w-full max-w-sm items-center gap-5 rounded-xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-gray-800'
+  }else if(props.as === "plain") {
+    return 'flex w-full max-w-sm items-center gap-5 p-4'
+  }
+})
+
 </script>
 
 <template>
-  <div class="flex w-full max-w-sm items-center gap-5 rounded-xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-gray-800">
+  <div :class="borderClass">
     <div class="grid grid-cols-1 grid-rows-1">
       <div class="col-start-1 row-start-1 size-12 rounded-full border-4 border-gray-100 dark:border-gray-700"></div>
       <div
