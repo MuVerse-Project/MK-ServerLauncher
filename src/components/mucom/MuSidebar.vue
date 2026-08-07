@@ -4,17 +4,18 @@ import {
   SidebarContent, SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel, SidebarHeader, SidebarInset,
+  SidebarHeader, SidebarInset,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger
 } from "@shadcn/sidebar"
-import {GalleryVerticalEnd, SquareUserRound, Moon, Sun} from "@lucide/vue"
-import {AppInfo} from "@/main.ts"
-import {MuSidebarMenus} from "@/main.ts"
+import {GalleryVerticalEnd, SquareUserRound, Moon, Sun, Languages} from "@lucide/vue"
+import {AppInfo, useLocale, useSidebarMenus} from "@/main.ts"
 import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
 import {useColorMode} from "@vueuse/core";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@shadcn/tooltip";
+import {TooltipProvider, Tooltip, TooltipContent, TooltipTrigger} from "@shadcn/tooltip";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@shadcn/dropdown-menu";
 
 const mode = useColorMode()
+const { menus } = useSidebarMenus()
 </script>
 
 <template>
@@ -38,10 +39,9 @@ const mode = useColorMode()
                                     :options="{ scrollbars: { autoHide: 'scroll' } }"
         >
           <SidebarGroup>
-            <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem v-for="item in MuSidebarMenus" :key="item.title">
+                <SidebarMenuItem v-for="item in menus" :key="item.title">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger as-child>
@@ -77,13 +77,26 @@ const mode = useColorMode()
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <SidebarMenuButton>
+                      <Languages/>
+                      <span>{{ $t("sidebar.internal.localeSelector") }}</span>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem v-for="l in $i18n.availableLocales" @click="useLocale(l)">{{ l }}</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton v-if="mode == 'light'" @click="mode = 'dark'">
                   <Moon/>
-                  <span>To Dark</span>
+                  <span>{{ $t("sidebar.internal.colorChanger.inLight") }}</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton v-else @click="mode = 'light'">
                   <Sun/>
-                  <span>To Light</span>
+                  <span>{{ $t("sidebar.internal.colorChanger.inDark") }}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

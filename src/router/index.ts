@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { canAccessRole, fetchSession, type UserRole } from '@muapi/auth'
-import {Home, Info} from "@lucide/vue";
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -15,12 +14,17 @@ export const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: () => import('@/views/HomeView.vue'),
+      component: () => import('@muview/HomeView.vue'),
     },
     {
       path: '/about',
       name: 'About',
-      component: () => import('@/views/AboutView.vue'),
+      component: () => import('@muview/AboutView.vue'),
     },
+    {
+      path: '/example',
+      name: 'Example',
+      component: () => import('@view/ExampleView.vue'),
+    }
   ],
 })

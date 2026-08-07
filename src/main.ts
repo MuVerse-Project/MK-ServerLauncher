@@ -1,12 +1,13 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import {computed, createApp} from 'vue'
+import {createPinia, defineStore} from 'pinia'
 import '@/style.css'
 import App from '@/App.vue'
 import {router} from '@/router'
-import {createI18n} from "vue-i18n"
+import {createI18n, useI18n} from "vue-i18n"
 import 'overlayscrollbars/overlayscrollbars.css'
 import 'vue-sonner/style.css'
-import {Home} from "@lucide/vue";
+import {Home, NotebookText} from "@lucide/vue";
+import {useStorage} from "@vueuse/core";
 
 // Define App Info to MuView.
 export const AppInfo = {
@@ -22,26 +23,67 @@ export const AppInfo = {
 }
 
 const i18n= createI18n({
-  locale: 'zh',
-  fallbackLocale: 'zh',
+  legacy: false,
+  locale: '简体中文',
+  fallbackLocale: 'English',
   allowComposition: true,
   messages: {
-    zh:{
-      message:{
-        title: '',
-      }
-    }
+    '简体中文':{
+      sidebar:{
+        example: "示例页面",
+        home: "主页面",
+        internal: {
+          localeSelector: "语言",
+          colorChanger: {
+            inDark: "明亮模式",
+            inLight: "暗黑模式"
+          },
+        }
+      },
+    },
+    'English':{
+      sidebar:{
+        example: "Example",
+        home: "Home",
+        internal: {
+          localeSelector: "Language",
+          colorChanger: {
+            inDark: "Light Mode",
+            inLight: "Dark Mode"
+          },
+        }
+      },
+    },
   }
 })
 
 // Define MuSidebar Menus
-export const MuSidebarMenus = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
-]
+export function useSidebarMenus() {
+  const { t } = useI18n()
+
+  const menus = computed(() => [
+    {
+      title: t('sidebar.example'),
+      url: '/example',
+      icon: NotebookText,
+    },
+    {
+      title: t('sidebar.home'),
+      url: '/',
+      icon: Home,
+    },
+  ])
+
+  return { menus }
+}
+
+export const i18nLocale = useStorage('locale', i18n.global.locale)
+
+export function useLocale(locale: string) {
+  i18nLocale.value = locale
+  // @ts-ignore
+  i18n.global.locale.value = i18nLocale.value
+}
 
 const app = createApp(App)
 const pinia = createPinia()

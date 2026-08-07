@@ -11,13 +11,15 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@muapi': path.resolve(__dirname, './src/api'),
-      '@assets': path.resolve(__dirname, './src/assets'),
-      '@router': path.resolve(__dirname, './src/router'),
-      '@internalViews': path.resolve(__dirname, './src/views'),
-      '@mucom': path.resolve(__dirname, './src/components/mucom'),
-      '@shadcn': path.resolve(__dirname, './src/components/ui'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@muapi': path.resolve(import.meta.dirname, './src/api'),
+      '@assets': path.resolve(import.meta.dirname, './src/assets'),
+      '@router': path.resolve(import.meta.dirname, './src/router'),
+      '@muview': path.resolve(import.meta.dirname, './src/views'),
+      '@mucom': path.resolve(import.meta.dirname, './src/components/mucom'),
+      '@shadcn': path.resolve(import.meta.dirname, './src/components/ui'),
+      '@com': path.resolve(import.meta.dirname, './src/custom/components'),
+      '@view': path.resolve(import.meta.dirname, './src/custom/views'),
     },
   },
   plugins: [
