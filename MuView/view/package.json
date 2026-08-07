@@ -38,7 +38,7 @@
     "vue-tsc": "^3.2.6"
   },
   "allowScripts": {
-    "vue-demi@0.14.10": true,
-    "maplibre-gl@2.4.0": true
+    "maplibre-gl@2.4.0": true,
+    "vue-demi@0.14.10": true
   }
 }

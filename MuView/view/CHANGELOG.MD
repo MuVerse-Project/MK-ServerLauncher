@@ -25,3 +25,13 @@
 
 #### 常规
 - HomeView：现在控制内容样式的 div 区块移动至上一级，现在 HomeView 为默认 flex-nowrap 状态的容器
+
+### V0.1.4
+
+#### 重要
+- MuSidebar：添加了 Tooltip（提示气泡），其可在侧边栏为收起状态时通过光标覆盖提示该菜单项的标题
+- AboutView：修复了分隔线在暗黑模式下颜色显示错误的问题
+- 由于暂时没有用途，删除了顶边栏菜单控件（navigation-menu）
+
+#### 常规
+- MuSidebar：修改了主颜色

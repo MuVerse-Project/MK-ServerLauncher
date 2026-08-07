@@ -12,6 +12,7 @@ import {AppInfo} from "@/main.ts"
 import {MuSidebarMenus} from "@/main.ts"
 import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
 import {useColorMode} from "@vueuse/core";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@shadcn/tooltip";
 
 const mode = useColorMode()
 </script>
@@ -41,12 +42,32 @@ const mode = useColorMode()
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem v-for="item in MuSidebarMenus" :key="item.title">
-                  <SidebarMenuButton as-child>
-                    <RouterLink :to="item.url">
-                      <component :is="item.icon" />
-                      <span>{{ item.title }}</span>
-                    </RouterLink>
-                  </SidebarMenuButton>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <SidebarMenuButton as-child>
+                          <RouterLink :to="item.url">
+                            <component :is="item.icon" />
+                            <span>{{ item.title }}</span>
+                          </RouterLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent
+                          align="center" side="right"
+                          :align-offset="5"
+                          :avoid-collisions="true"
+                          :collision-boundary="null"
+                          :collision-padding="2"
+                          :arrow-padding="2"
+                          :hide-when-detached="true"
+                          position-strategy="absolute"
+                          update-position-strategy="always"
+                          sticky="always"
+                      >
+                        {{ item.title }}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
