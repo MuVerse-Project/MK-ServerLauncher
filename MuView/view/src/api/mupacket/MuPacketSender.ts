@@ -4,8 +4,8 @@ import {
     type MuPacket,
     MuPacketError,
     type MuPacketJSON,
-} from "@/api/mupacket/MuPacket.ts"
-import {MuPacketReader} from "@/api/mupacket/MuPacketReader.ts"
+} from "@muapi/mupacket/MuPacket.ts"
+import {MuPacketReader} from "@muapi/mupacket/MuPacketReader.ts"
 
 export class MuPacketSendError extends MuPacketError {
     public readonly raw: unknown

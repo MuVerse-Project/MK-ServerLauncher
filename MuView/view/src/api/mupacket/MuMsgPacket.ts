@@ -1,4 +1,4 @@
-import {isRecord, reg, type MuPacket} from "@/api/mupacket/MuPacket.ts"
+import {isRecord, reg, type MuPacket} from "@muapi/mupacket/MuPacket.ts"
 
 export type MuMsgType = "ok" | "info" | "warn" | "err"
 

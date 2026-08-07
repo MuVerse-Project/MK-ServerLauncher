@@ -9,13 +9,11 @@ const props = defineProps<{
   class?: HTMLAttributes['class']
 }>()
 
-let value = ref(props.value)
-let max = ref(props.max)
 let percent = computed(() => Math.min((props.value / props.max) * 100, 100).toFixed(2))
 
 let borderClass = computed(() => {
   if(props.as === "card") {
-    return 'flex w-full max-w-sm items-center gap-5 rounded-xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-gray-800'
+    return 'flex w-full max-w-sm items-center gap-5 rounded-xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-sidebar'
   }else if(props.as === "plain") {
     return 'flex w-full max-w-sm items-center gap-5 p-4'
   }
@@ -26,17 +24,23 @@ let borderClass = computed(() => {
 <template>
   <div :class="borderClass">
     <div class="grid grid-cols-1 grid-rows-1">
-      <div class="col-start-1 row-start-1 size-12 rounded-full border-4 border-gray-100 dark:border-gray-700"></div>
+      <div class="col-start-1 row-start-1 size-12 rounded-full border-4 dark:border-gray-100"></div>
       <div
-          :class="cn(`gauge-ring col-start-1 row-start-1 size-12 rounded-full border-4 border-amber-500 dark:border-amber-400 mask-conic-from-(--progress) mask-conic-to-(--progress)`)"
+          :class="cn(`gauge-ring col-start-1 row-start-1 size-12 rounded-full border-4 border-fuchsia-600 dark:border-fuchsia-600 mask-conic-from-(--progress) mask-conic-to-(--progress)`)"
           :style="{ '--progress': `${percent}%` }"
       ></div>
     </div>
     <div class="w-0 flex-1 text-sm text-gray-950 dark:text-white">
-      <p class="font-medium">Storage used: {{ percent }}%</p>
-      <p class="mt-1 text-gray-500 dark:text-gray-400">
-        <span class="font-medium">{{ value }} GB</span> out of {{ max }} GB remaining
-      </p>
+      <div class="text-lg font-bold">
+        <slot name="header" :percent="percent" :value="value" :max="max">
+          <p>{{ percent }}%</p>
+        </slot>
+      </div>
+      <div class="mt-1 text-gray-500 dark:text-gray-400">
+        <slot name="footer" :percent="percent" :value="value" :max="max">
+          <span class="font-bold">{{ props.value }}</span> / {{ props.max }}
+        </slot>
+      </div>
     </div>
   </div>
 </template>

@@ -18,7 +18,7 @@ import {Separator} from "@shadcn/separator";
         <X class="not-md:hidden" :size="32" />
         <div>
           <div class="text-5xl font-bold underline">MuView</div>
-          <div class="-mt-0.5 text-xl">Ver.LunaLight V0.1.4</div>
+          <div class="-mt-0.5 text-xl">Ver.LunaLight V0.1.5</div>
           <div class="text-sm text-muted-foreground">By Mu_Mu</div>
         </div>
       </div>

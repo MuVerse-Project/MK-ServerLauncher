@@ -18,8 +18,7 @@
     "utils": "@/lib/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",
-    "composables": "@/composables",
-    "muapi": "@/api"
+    "composables": "@/composables"
   },
   "registries": {}
 }
