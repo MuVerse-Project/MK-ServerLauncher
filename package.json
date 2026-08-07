@@ -36,5 +36,9 @@
     "typescript": "~6.0.2",
     "vite": "^8.0.4",
     "vue-tsc": "^3.2.6"
+  },
+  "allowScripts": {
+    "maplibre-gl@2.4.0": true,
+    "vue-demi@0.14.10": true
   }
 }
