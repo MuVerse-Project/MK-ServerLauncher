@@ -15,6 +15,7 @@ import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerLogPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerStatusPacket
+import me.mucloud.application.mk.serverlauncher.muserver.ServerPool.randomMSID
 import java.io.File
 import java.io.PrintWriter
 import java.time.LocalDateTime
@@ -219,7 +220,7 @@ class MCJEServer(
 
     @Serializable
     data class Info(
-        val msid: String,
+        val msid: String = randomMSID(),
         var name: String,
         val version: String,
         @Contextual val type: MCJEServerType,
