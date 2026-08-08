@@ -9,6 +9,10 @@ import me.mucloud.application.mk.serverlauncher.mucore.MuUtils.any
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.info
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
 import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.UNKNOWN
+import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.PAPER
+import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.LEAVES
+import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.FOLIA
+import me.mucloud.application.mk.serverlauncher.muserver.StandardMCJEServerTypes.VANILLA
 import java.io.File
 import java.io.FileReader
 import java.nio.charset.StandardCharsets
@@ -25,6 +29,12 @@ object ServerPool {
         if(!MuCoreMini.getMuCoreConfig().getServerFolder().exists()){
             MuCoreMini.getMuCoreConfig().getServerFolder().mkdir()
         }
+
+        regType(UNKNOWN)
+        regType(PAPER)
+        regType(LEAVES)
+        regType(FOLIA)
+        regType(VANILLA)
     }
 
     fun importMuServer(ms: MCJEServer): MuStateResult{
@@ -115,11 +125,18 @@ object ServerPool {
 
     fun saveServers() = Pool.forEach(MCJEServer::save)
 
-    fun getType(id: String): MCJEServerType = ServerTypePool.find { it.id == id } ?: UNKNOWN
+    fun getType(id: String): MuResult<MCJEServerType>{
+        val result = ServerTypePool.find { it.id == id } ?: UNKNOWN
+        return if(result == UNKNOWN) MuResult(false, UNKNOWN) else MuResult(true, result)
+    }
 
-    fun regType(type: MCJEServerType){
+    fun regType(type: MCJEServerType): MuStateResult{
         if (ServerTypePool.contains(type)){
             warn(LOG_PREFIX, "Ambiguous Server Type Detected >> ${type.id}")
+            return MuStateResult(false, "Ambiguous Server Type Detected >> ${type.id}")
+        }else{
+            ServerTypePool.add(type)
+            return MuStateResult.OK
         }
     }
 

@@ -1,23 +1,15 @@
 package me.mucloud.application.mk.serverlauncher.muview.view
 
 import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.getValue
-import me.mucloud.application.mk.serverlauncher.muenv.EnvPool
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExcutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
-import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import me.mucloud.application.mk.serverlauncher.muserver.MuServerService
-import me.mucloud.application.mk.serverlauncher.muserver.ServerPool
 import me.mucloud.application.mk.serverlauncher.muview.MuView
-import java.io.File
-import java.util.*
-import java.util.jar.JarFile
 
 fun Application.initServerRoute() {
     routing {
@@ -26,7 +18,7 @@ fun Application.initServerRoute() {
         }
         route("api/v1/server") {
             get("availableType") {
-                call.respond(MuServerService.getAvaliableServerTypes())
+                call.respond(MuServerService.getAvailableServerTypes())
             }
             get("list") {
                 call.respond(MuServerService.getServerList())
