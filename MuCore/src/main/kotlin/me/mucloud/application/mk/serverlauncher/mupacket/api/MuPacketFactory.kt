@@ -1,6 +1,5 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.api
 
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
@@ -83,19 +82,11 @@ object MuPacketFactory {
     private fun callListeners(type: MuPacketInfo<*>, mp: MuPacket) = MPListeners[type]?.forEach { it(mp) }
 
     /**
-     * ### MuPacket Gson Adapter Register
-     *
-     * regMuPacket to Gson Builder Adapter Provider with MuPacket Class
+     * ### MuPacket Call ID Randomly Generator
      *
      * @author Mu_Cloud
-     * @param builder Raw Gson Builder
-     * @return The Gson Builder [builder] after register
-     * @since RainyZone V1 | DEV.1
-     * @suppress Unstable API.
+     * @return A Long Number, which represents the Call ID of a MuPacket
+     * @since RainyZone V1 | DEV.2
      */
-    fun addMuPacketAdapter(builder: GsonBuilder): GsonBuilder = builder.apply {
-        registerTypeAdapter(MuPacket::class.java, MuPacketAdapter)
-    }
-
     fun Random.nextCallId(): Long = nextLong(100000000L..999999999L)
 }

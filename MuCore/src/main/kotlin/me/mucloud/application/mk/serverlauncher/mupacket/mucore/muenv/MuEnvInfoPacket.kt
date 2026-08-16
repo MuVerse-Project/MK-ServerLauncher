@@ -1,14 +1,14 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv
 
+import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.MuMsgPacket
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.MuMsgPacketInfo
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.MuMsgStatus
 import kotlin.random.Random
 
 class MuEnvInfoPacket(
-    ev: JavaEnvironment,
+    val ev: JavaEnvironment,
     cid: Long = Random.nextCallId(),
-): MuMsgPacket(muEnvInfoPacketInfo, MuMsgStatus.INFO, gson.toJson(ev), cid)
+): MuEnvPacket(muEnvInfoPacketInfo, ev, cid){
+    override fun getMEPData(): JsonObject = gson.toJsonTree(ev) as JsonObject
+}

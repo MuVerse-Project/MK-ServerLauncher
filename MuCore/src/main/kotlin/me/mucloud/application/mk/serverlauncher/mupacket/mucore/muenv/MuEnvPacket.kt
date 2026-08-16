@@ -7,8 +7,8 @@ import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nex
 import kotlin.random.Random
 
 abstract class MuEnvPacket(
-    val targetJEnv: JavaEnvironment,
     mepInfo: MuEnvPacketInfo,
+    val targetJEnv: JavaEnvironment,
     cid: Long = Random.nextCallId(),
 ) : AbstractMuPacket(mepInfo, cid) {
     final override fun getData(): JsonObject = JsonObject().apply {

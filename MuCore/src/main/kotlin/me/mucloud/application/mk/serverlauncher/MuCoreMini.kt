@@ -11,11 +11,7 @@ import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironmentAdapter
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketAdapter
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgErrPacketInfo
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgInfoPacketInfo
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgOKPacketInfo
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgTipPacketInfo
-import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muMsgWarnPacketInfo
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv.muEnvInfoPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv.muEnvListPacketInfo
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.muServerInfoPacketInfo
@@ -59,17 +55,13 @@ object MuCoreMini {
     fun getMuCoreConfig(): MuConfiguration = MuCoreConfiguration
 
     private fun regMuPackets(){
+        MuPacketFactory.regMuPacket(MuMsgPacketInfo)
         MuPacketFactory.regMuPacket(muEnvInfoPacketInfo)
         MuPacketFactory.regMuPacket(muEnvListPacketInfo)
         MuPacketFactory.regMuPacket(muServerInfoPacketInfo)
         MuPacketFactory.regMuPacket(muServerListPacketInfo)
         MuPacketFactory.regMuPacket(muServerLogPacketInfo)
         MuPacketFactory.regMuPacket(muServerStatusPacketInfo)
-        MuPacketFactory.regMuPacket(muMsgInfoPacketInfo)
-        MuPacketFactory.regMuPacket(muMsgWarnPacketInfo)
-        MuPacketFactory.regMuPacket(muMsgErrPacketInfo)
-        MuPacketFactory.regMuPacket(muMsgOKPacketInfo)
-        MuPacketFactory.regMuPacket(muMsgTipPacketInfo)
         MuPacketFactory.regMuPacket(createMuServerPacketInfo)
         MuPacketFactory.regMuPacket(importMuServerPacketInfo)
     }
