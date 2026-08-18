@@ -11,6 +11,7 @@ object MCJEServerAdapter: JsonSerializer<MCJEServer> {
         JsonObject().apply{
             val targetMSI = s.msi
             val targetMSS = s.mss
+            addProperty("msid", targetMSI.msid)
             addProperty("name", targetMSI.name)
             addProperty("desc", targetMSI.name)
             addProperty("version", targetMSI.version)
