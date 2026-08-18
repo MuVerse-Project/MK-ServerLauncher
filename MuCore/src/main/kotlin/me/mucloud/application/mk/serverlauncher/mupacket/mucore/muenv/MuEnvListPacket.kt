@@ -1,6 +1,6 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv
 
-import com.google.gson.JsonObject
+import com.google.gson.JsonArray
 import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
@@ -11,5 +11,5 @@ class MuEnvListPacket(
     val envList: List<JavaEnvironment>,
     cid: Long = Random.nextCallId(),
 ): AbstractMuPacket(muEnvListPacketInfo, cid){
-    override fun getData(): JsonObject = gson.toJsonTree(envList) as JsonObject
+    override fun getData(): JsonArray = gson.toJsonTree(envList) as JsonArray
 }

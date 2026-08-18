@@ -1,5 +1,6 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.api
 
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 
 /**
@@ -34,7 +35,7 @@ interface MuPacket {
      * @see toJson
      * @since RainyZone V1 | DEV.1
      */
-    fun getData(): JsonObject
+    fun getData(): JsonElement
 
     /**
      * ### MuPacket2JSON

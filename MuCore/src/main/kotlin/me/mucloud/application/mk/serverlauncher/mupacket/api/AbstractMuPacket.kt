@@ -1,5 +1,6 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.api
 
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
 import kotlin.random.Random
@@ -31,5 +32,5 @@ abstract class AbstractMuPacket(
 
     final override fun getCallId(): Long = cid
 
-    abstract override fun getData(): JsonObject
+    abstract override fun getData(): JsonElement
 }
