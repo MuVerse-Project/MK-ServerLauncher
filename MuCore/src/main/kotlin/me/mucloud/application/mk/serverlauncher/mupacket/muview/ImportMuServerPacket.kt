@@ -3,7 +3,7 @@ package me.mucloud.application.mk.serverlauncher.mupacket.muview
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
-import me.mucloud.application.mk.serverlauncher.mupacket.api.ExcutableMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
@@ -14,11 +14,11 @@ class ImportMuServerPacket(
     val loc: File,
     val mssc: MCJEServer.StartupConfig,
     cid: Long = Random.nextCallId(),
-): AbstractMuPacket(importMuServerPacketInfo, cid), ExcutableMuPacket {
+): AbstractMuPacket(importMuServerPacketInfo, cid), ExecutableMuPacket {
     override fun getData(): JsonObject = JsonObject().apply {
         add("LOC", gson.toJsonTree(loc))
         add("MSSC", gson.toJsonTree(mssc))
     }
 
-    override fun excute(): MuPacket = TODO()
+    override fun execute(): MuPacket = TODO()
 }
