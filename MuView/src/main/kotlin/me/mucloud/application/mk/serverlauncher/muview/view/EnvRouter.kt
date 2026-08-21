@@ -7,7 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
 import me.mucloud.application.mk.serverlauncher.muenv.MuEnvironmentService
-import me.mucloud.application.mk.serverlauncher.mupacket.api.ExcutableMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 
 fun Application.initEnvRoute(){
@@ -19,8 +19,8 @@ fun Application.initEnvRoute(){
 
             post("create"){
                 val rawData = call.receive<JsonObject>()
-                val mp = MuPacketFactory.toPacket(rawData) as ExcutableMuPacket
-                call.respond(mp.excute())
+                val mp = MuPacketFactory.toPacket(rawData) as ExecutableMuPacket
+                call.respond(mp.execute())
             }
 
             get("delete/{name}"){

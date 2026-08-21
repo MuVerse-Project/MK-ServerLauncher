@@ -6,7 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.getValue
-import me.mucloud.application.mk.serverlauncher.mupacket.api.ExcutableMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 import me.mucloud.application.mk.serverlauncher.muserver.MuServerService
 import me.mucloud.application.mk.serverlauncher.muview.MuView
@@ -46,14 +46,14 @@ fun Application.initServerRoute() {
 
             post("create") {
                 val raw = call.receive<JsonObject>()
-                val mp = MuPacketFactory.toPacket(raw) as ExcutableMuPacket
-                call.respond(mp.excute())
+                val mp = MuPacketFactory.toPacket(raw) as ExecutableMuPacket
+                call.respond(mp.execute())
             }
 
             post("import") {
                 val raw = call.receive<JsonObject>()
-                val mp = MuPacketFactory.toPacket(raw) as ExcutableMuPacket
-                call.respond(mp.excute())
+                val mp = MuPacketFactory.toPacket(raw) as ExecutableMuPacket
+                call.respond(mp.execute())
             }
         }
     }
