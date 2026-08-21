@@ -128,8 +128,8 @@ class MCJEServer(
             mss = ServerStatus.RUNNING
         }
     }
-
-    fun stopMuServer(enforce: Boolean = false){ // TDOD: re-check: Need Enforce?
+                                            // He: TDOD❤
+    fun stopMuServer(enforce: Boolean = false){ // TODO: re-check: Need Enforce?
         if(mss == ServerStatus.RUNNING){
             mss = ServerStatus.STOPPING
             if(enforce) msp.destroyForcibly() else {
@@ -167,7 +167,12 @@ class MCJEServer(
     }
 
     private fun runProcess(){
-        msp = ProcessBuilder("${msi.env.getAbsoluteExecPath()} -jar $mssc ${instance.absolutePath}")
+
+        val hJvmargs : List<String>  = buildList {
+            add("-Xms${mssc.minMemory}M");add("-Xmx${mssc.maxMemory}M")
+            if (mssc.jvmFlag.isNotEmpty()) { mssc.jvmFlag.split(" ").filter { it.isNotEmpty() }.forEach { add(it) } };if (!mssc.hasGui) add("--nogui")
+        }
+        msp = ProcessBuilder(msi.env.getAbsoluteExecPath(),"-jar",*hJvmargs.toTypedArray(),instance.absolutePath)
             .directory(msi.msl)
             .redirectOutput(msi.msl.resolve("mksl-${msi.msid}.log"))
             .start()
@@ -228,7 +233,8 @@ class MCJEServer(
         @Contextual var env: JavaEnvironment,
         var port: Int,
         @Contextual val msl: File = MuCoreMini.getMuCoreConfig().getServerFolder().resolve(name)
-    )
+    ){init { require(port in 1..65535){"Port must be between 1 and 65535"} } }
+    //He:后续可以添加试错或在前端解决，先抛异常
 
     @Serializable
     data class MuServerProcessLck(

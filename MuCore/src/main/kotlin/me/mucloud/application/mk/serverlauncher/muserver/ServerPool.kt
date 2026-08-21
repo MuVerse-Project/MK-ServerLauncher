@@ -57,11 +57,12 @@ object ServerPool {
         val hasSamePort: Boolean = Pool.find { msi.port == it.msi.port } != null
 
         return MuStateResult(
-            any(hasSameName, hasSameLocation, hasSamePort),
+            //He:🤷‍♂️
+            !any(hasSameName, hasSameLocation, hasSamePort),
             when{
-                hasSameName -> ""
-                hasSameLocation -> ""
-                hasSamePort -> ""
+                hasSameName -> "Server name has already exists: ${msi.name}"
+                hasSameLocation -> "Server location has already exists: ${msi.msl}"
+                hasSamePort -> "Port has already exists: ${msi.port}"
                 else -> null
             }
         )
@@ -144,7 +145,8 @@ object ServerPool {
         var rawId: String
         do{
             rawId = UUID.randomUUID().toString().replace("-", "").substring(0, 8)
-        }while (!getMuServer(rawId).isOk)
+        }while (getMuServer(rawId).isOk)
+        //He:♿
         return rawId
     }
 }

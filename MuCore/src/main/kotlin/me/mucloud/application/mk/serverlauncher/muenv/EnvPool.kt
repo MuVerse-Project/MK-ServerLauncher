@@ -93,12 +93,11 @@ object EnvPool {
 
     fun delEnv(envName: String): MuStateResult{
         val callback = getEnv(envName)
-        return if(!callback.isOk){
-            MuStateResult(false, "Env could not be delated: ${callback.msg}")
-        }else{
-            MuStateResult.OK
-        }
+        if (!callback.isOk) { return MuStateResult(false, "Env could not be deleted: ${callback.msg}") }
+        val env = callback.value!!;jEnvs.remove(env);save()
+        return MuStateResult(true, "Deleted: ${env.name}")
     }
+    //He:关于这里我把因为忘了语法糖咋写了就重写成了正常风格
 
     fun regEnv(env: JavaEnvironment): MuStateResult{
         val target = jEnvs.find { it.name == env.name || it.getAbsoluteExecPath() == env.getAbsoluteExecPath() }
