@@ -1,6 +1,8 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.api
 
 import com.google.gson.JsonObject
+import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgErrPacket
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 import kotlin.random.nextLong
@@ -45,13 +47,18 @@ object MuPacketFactory {
      * @since RainyZone V1 | DEV.1
      */
     fun toPacket(raw: JsonObject): MuPacket {
+        try{
         require(raw.has("MP_ID") && raw.has("MP_DATA") && raw.has("CID")) { "Invalid MuPacket Raw >> Corrupted Raw" }
         val mpid = raw["MP_ID"].asString
         val type = MPPool[mpid] ?: error("Invalid MuPacket Raw >> Unregistered MP_ID ($mpid)")
-        require(raw["MP_DATA"].isJsonObject) { "Invalid MuPacket Raw >> MP_DATA must be an object" }
+        require(raw["MP_DATA"].isJsonObject) { "Invalid MuPacket Raw >> MP_DATA must be an json object" }
         val data = raw["MP_DATA"].asJsonObject
         val cid = raw["CID"].asLong
         return type.fromData(data, cid).also { callListeners(type, it) }
+        }catch (e: Exception){
+            warn("MuPacketFactory", "Deserialize failed: ${e.message}")
+            return MuMsgErrPacket("Invalid packet: ${e.message}")
+        }
     }
 
     /**

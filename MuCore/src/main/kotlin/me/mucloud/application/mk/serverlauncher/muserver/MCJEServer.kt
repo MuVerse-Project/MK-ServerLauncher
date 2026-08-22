@@ -75,7 +75,7 @@ class MCJEServer(
         info(LOG_PREFIX, "MuServer ${msi.msid} start deploying...")
 
         val rawCore = msi.type.getCoreFile(msi.version)
-        instance.inputStream().copyTo(rawCore.outputStream())
+        rawCore.copyTo(instance, overwrite = true)
 
         startMuServer()
         stopMuServer(enforce = true)
@@ -283,7 +283,12 @@ class MCJEServer(
         }
 
         fun tryLoad(){
-            serverProperties.load(msi.msl.resolve("server.properties").reader())
+            val propsFile = msi.msl.resolve("server.properties")
+            if (propsFile.exists()) {
+                serverProperties.load(propsFile.reader())
+            } else {
+                warn(LOG_PREFIX, "server.properties canot found in ${msi.msl} , sodefaults")
+            }
 
             getAvailablePaths2File().forEach { p ->
                 instances.add(FileConfig.of(p))
