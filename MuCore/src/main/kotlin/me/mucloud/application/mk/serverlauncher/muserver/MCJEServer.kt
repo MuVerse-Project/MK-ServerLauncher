@@ -75,7 +75,7 @@ class MCJEServer(
         info(LOG_PREFIX, "MuServer ${msi.msid} start deploying...")
 
         val rawCore = msi.type.getCoreFile(msi.version)
-        instance.inputStream().copyTo(rawCore.outputStream())
+        rawCore.copyTo(instance, overwrite = true)
 
         startMuServer()
         stopMuServer(enforce = true)
