@@ -35,6 +35,7 @@ object SystemMonitor{
     }
 
     fun initMonitor(interval: Duration){
+        if (isActive) return
         isActive = true
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             while(isActive){
