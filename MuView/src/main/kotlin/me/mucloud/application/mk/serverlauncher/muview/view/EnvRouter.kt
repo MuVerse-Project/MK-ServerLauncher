@@ -19,8 +19,8 @@ fun Application.initEnvRoute(){
 
             post("create"){
                 val rawData = call.receive<JsonObject>()
-                val mp = MuPacketFactory.toPacket(rawData) as ExecutableMuPacket
-                call.respond(mp.execute())
+                val mp = MuPacketFactory.toPacket(rawData)
+                call.respond(if(mp is ExecutableMuPacket){ mp.execute() } else mp)
             }
 
             get("delete/{name}"){

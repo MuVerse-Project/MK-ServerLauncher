@@ -46,14 +46,14 @@ fun Application.initServerRoute() {
 
             post("create") {
                 val raw = call.receive<JsonObject>()
-                val mp = MuPacketFactory.toPacket(raw) as ExecutableMuPacket
-                call.respond(mp.execute())
+                val mp = MuPacketFactory.toPacket(raw)
+                call.respond(if(mp is ExecutableMuPacket){ mp.execute() } else mp)
             }
 
             post("import") {
                 val raw = call.receive<JsonObject>()
-                val mp = MuPacketFactory.toPacket(raw) as ExecutableMuPacket
-                call.respond(mp.execute())
+                val mp = MuPacketFactory.toPacket(raw)
+                call.respond(if(mp is ExecutableMuPacket){ mp.execute() } else mp)
             }
         }
     }
