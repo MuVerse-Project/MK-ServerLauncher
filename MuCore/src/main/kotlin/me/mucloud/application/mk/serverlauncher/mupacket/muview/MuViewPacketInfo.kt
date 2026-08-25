@@ -3,7 +3,9 @@ package me.mucloud.application.mk.serverlauncher.mupacket.muview
 import com.google.gson.JsonObject
 import kotlinx.serialization.json.Json
 import me.mucloud.application.mk.serverlauncher.mucore.MuUtils.all
+import me.mucloud.application.mk.serverlauncher.muenv.EnvPool
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
+import me.mucloud.application.mk.serverlauncher.muenv.MuEnvironmentService
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import java.io.File
@@ -33,11 +35,13 @@ val importMuServerPacketInfo = object: MuPacketInfo<ImportMuServerPacket>{
         data: JsonObject,
         cid: Long
     ): ImportMuServerPacket {
-        val valid = all(data.has("LOC"), data.has("MSSC"))
+        val valid = all(data.has("MSL"), data.has("EV_NAME"), data.has("MSSC"))
         if(valid){
-            val loc = File(data["LOC"].asString)
+            val msl = File(data["MSL"].asString)
+            val ev = EnvPool.getEnv(data["EV_NAME"].asString)
+                .let { if(!it.isOk) throw UnsupportedOperationException("The MuEnvironment ${data["EV_NAME"].asString} is invalid") else return@let it.value!! }
             val mssc = Json.decodeFromString<MCJEServer.StartupConfig>(data["MSSC"].asString)
-            return ImportMuServerPacket(loc, mssc, cid)
+            return ImportMuServerPacket(msl, ev, mssc, cid)
         }else{
             throw UnsupportedOperationException("Do not read MP_DATA from MuPacket")
         }
