@@ -24,8 +24,8 @@ fun Application.initEnvRoute(){
             }
 
             get("delete/{name}"){
-                val evid: String by call.parameters
-                call.respond(MuEnvironmentService.delMuEnvironment(evid))
+                val name: String by call.parameters
+                call.respond(MuEnvironmentService.delMuEnvironment(name))
             }
         }
     }
