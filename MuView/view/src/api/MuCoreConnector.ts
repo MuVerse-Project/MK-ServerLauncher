@@ -1,18 +1,7 @@
-import axios, {type AxiosInstance, type AxiosRequestConfig} from "axios";
-import {MuPacketReader, MuPacketReadError} from "@muapi/mupacket/MuPacketReader.ts";
-import {MuPacketSender} from "@muapi/mupacket/MuPacketSender.ts";
-import "@muapi/mupacket/MuMsgPacket.ts";
-
-const resolveIncomingPayload = (raw: unknown): unknown => {
-    const parsed = MuPacketReader.parseJSON(raw)
-    return MuPacketReader.isPacketShape(parsed)
-        ? MuPacketReader.read(parsed)
-        : parsed
-}
-
-const resolveOutgoingPayload = (data: unknown): unknown => {
-    return MuPacketSender.packIfMuPacket(data)
-}
+import axios, {type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} from "axios";
+import "@/custom/api/MuMsgPacket.ts";
+import {MuPacket, type MuPacketData} from "@/api/mupacket/MuPacket.ts";
+import {MuPacketRegistry} from "@/api/mupacket/MuPacketFactory.ts";
 
 const resolveWebSocketUrl = (api: string) => {
     if (/^wss?:\/\//i.test(api)) {
@@ -21,61 +10,129 @@ const resolveWebSocketUrl = (api: string) => {
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws"
     const path = api.startsWith("/") ? api : `/${api}`
-    return `${protocol}://${window.location.host}${path}`
+    // return `${protocol}://${window.location.host}${path}`
+    return `ws://127.0.0.1:20038${path}`
 }
 
+interface MuPacketAxiosConfig extends AxiosRequestConfig{
+    usingMuPacket?: boolean
+}
+
+/**
+ * # MuView Frontend
+ *
+ * ## MuHTTPClient Base
+ *
+ * The Mu's Customized HttpClient with Dual-Message Mode (JSON & MuPacket) based on Axios
+ *
+ * **Attention: Please use MuHttpClient, do not using this**
+ *
+ * @see MuHttpClient
+ */
 class MuHTTPClientBase{
     private readonly base: AxiosInstance
 
     constructor() {
         this.base = axios.create({
+            baseURL: "http://127.0.0.1:20038",
             timeout: 30000,
-            withCredentials: true,
+            withCredentials: false,
             headers: { "Content-Type": "application/json", },
         })
 
         this.base.interceptors.request.use(
-            (config) => { return config },
+            (config) => {
+                const muConfig = config as MuPacketAxiosConfig
+
+                if (muConfig.usingMuPacket === true) {
+                    if(config.data instanceof MuPacket){
+                        config.data = config.data.toJSON()
+                    }
+                }
+
+                return config
+            },
             (err) => Promise.reject(err),
         )
 
         this.base.interceptors.response.use(
-            (res) => {
-                res.data = resolveIncomingPayload(res.data)
-                return res
+            (response) => {
+                const muConfig = response.config as MuPacketAxiosConfig;
+
+                if (muConfig.usingMuPacket === false) {
+                    return response;
+                }
+
+                const data = response.data;
+
+                if (this.isMuPacketData(data)) {
+                    try {
+                        response.data = MuPacketRegistry.parse(data);
+                    } catch (e) {
+                        console.warn(`[MuPacketAxios] 解析失败 (MP_ID=${data.MP_ID}):`, e);
+                    }
+                }
+
+                return response;
             },
-            (err) => Promise.reject(err),
+            (error) => Promise.reject(error)
         )
     }
 
-    private async request<T = unknown>(config: AxiosRequestConfig): Promise<T> {
+    private isMuPacketData<T extends object>(data: unknown): data is MuPacketData<T> {
+        return (
+            data !== null &&
+            typeof data === "object" &&
+            "MP_ID" in data &&
+            "MP_DATA" in data &&
+            "CID" in data &&
+            typeof (data as Record<string, unknown>).MP_ID === "string"
+        );
+    }
+
+    private async request<T = unknown>(config: MuPacketAxiosConfig): Promise<T> {
         const res = await this.base.request<unknown>(config);
         return res.data as T;
     }
 
-    public get<T = unknown>(api: string, config?: AxiosRequestConfig): Promise<T>{
+    public get<T = MuPacket>(api: string, config?: MuPacketAxiosConfig): Promise<T>{
         return this.request<T>({ ...config, method: 'GET', url: api })
     }
 
-    public post<T = unknown>(api: string, data: unknown, config?: AxiosRequestConfig): Promise<T>{
-        return this.request<T>({ ...config, method: 'POST', url: api, data: resolveOutgoingPayload(data) })
+    public post<T = MuPacket>(api: string, mp: MuPacket, config?: MuPacketAxiosConfig): Promise<T>{
+        return this.request<T>({ ...config, method: 'POST', url: api, data: mp.toJSON() })
     }
 
-    public put<T = unknown>(api: string, data: unknown, config?: AxiosRequestConfig): Promise<T>{
-        return this.request<T>({ ...config, method: 'PUT', url: api, data: resolveOutgoingPayload(data) })
+    public getRaw<T = object>(api: string, config?: MuPacketAxiosConfig): Promise<T> {
+        return this.request<T>({ ...config, usingMuPacket: false, method: 'GET', url: api })
     }
 
-    public delete<T = unknown>(api: string, config?: AxiosRequestConfig): Promise<T>{
-        return this.request<T>({ ...config, method: 'DELETE', url: api })
+    public postRaw<T = object>(api: string, data?: unknown, config?: MuPacketAxiosConfig): Promise<T> {
+        return this.request<T>({ ...config, usingMuPacket: false, method: 'POST', url: api, data: data })
     }
 }
 
+/**
+ * # MuView Frontend
+ *
+ * ## Mu WebSocket Connection Base - MuWSConnectionBase
+ *
+ * ### Attention: Unstabled Base!
+ *
+ * The Mu's Customized WebSocket, receive String Message or MuPacket (Optional).
+ *
+ * **Attention: Please use MuWSConnection, do not using this**
+ *
+ * @see MuWSConnection
+ */
 class MuWSConnectionBase{
     private readonly base: WebSocket
-    private finalMSG: unknown
-    private finalError: Error | undefined
+    private finalMSG: MuPacket | undefined
+    private finalError: unknown
+    private usingMuPacket: boolean
 
-    constructor(api: string) {
+    constructor(api: string, usingMuPacket: boolean = true) {
+        this.usingMuPacket = usingMuPacket
         this.base = new WebSocket(resolveWebSocketUrl(api))
         this.base.onopen = (e) => {
             console.log("WebSocket Connected >> " + e)
@@ -86,14 +143,18 @@ class MuWSConnectionBase{
         }
         this.base.onmessage = (e) => {
             try {
-                this.finalMSG = resolveIncomingPayload(e.data)
-                this.finalError = undefined
+                if(usingMuPacket){
+                    const rawMsg = JSON.parse(e.data)
+                    this.finalMSG = this.isMuPacketData(rawMsg) ? MuPacketRegistry.parse(rawMsg) : rawMsg
+                    this.finalError = undefined
+                }else{
+                    this.finalMSG = e.data
+                    this.finalError = undefined
+                }
             } catch (error) {
-                this.finalError = error instanceof Error
-                    ? error
-                    : new MuPacketReadError(String(error), e.data)
+                this.finalError = error
                 console.error(this.finalError)
-                this.base.close(1003, this.finalError.message)
+                this.base.close(1003, "Closed Unexceptionally")
             }
         }
         this.base.onclose = (e) => {
@@ -101,13 +162,28 @@ class MuWSConnectionBase{
         }
     }
 
-    public getMsg(): unknown {
+    private isMuPacketData<T extends object>(data: unknown): data is MuPacketData<T> {
+        return (
+            data !== null &&
+            typeof data === "object" &&
+            "MP_ID" in data &&
+            "MP_DATA" in data &&
+            "CID" in data &&
+            typeof (data as Record<string, unknown>).MP_ID === "string"
+        );
+    }
+
+    public getMsg(): MuPacket | unknown {
         if (this.finalError != null) {
             throw this.finalError
         }
 
         if(this.isConnected()){
-            return this.finalMSG
+            if(this.usingMuPacket){
+                return this.finalMSG as MuPacket
+            }else{
+                return this.finalMSG
+            }
         }else{
             return undefined
         }
@@ -117,10 +193,16 @@ class MuWSConnectionBase{
         return this.base.readyState == this.base.OPEN
     }
 
-    public send(jsonMsg: unknown): unknown {
+    public send(msg: any): unknown {
         if(this.base && this.isConnected()){
-            this.base.send(JSON.stringify(resolveOutgoingPayload(jsonMsg)))
-            return this.getMsg()
+            if(this.usingMuPacket){
+                const rawMsg = JSON.stringify(msg.toJSON())
+                this.base.send(rawMsg)
+                return this.getMsg()
+            }else{
+                this.base.send(msg)
+                return this.getMsg()
+            }
         }else{
             console.warn("Error occurred while send MSG to MuCore, probably MuCore OFFLINE")
         }
@@ -133,6 +215,23 @@ class MuWSConnectionBase{
     }
 }
 
+/**
+ * # MuView Frontend
+ *
+ * ## MuHTTPClient
+ *
+ * The Mu's Customized HttpClient with Dual-Message Mode (JSON & MuPacket) based on Axios
+ */
 export const MuHttpClient = new MuHTTPClientBase()
+
+/**
+ * # MuView Frontend
+ *
+ * ## Mu WebSocket Connection - MuWSConnection
+ *
+ * ### Attention: Unstabled!
+ *
+ * The Mu's Customized WebSocket, receive String Message or MuPacket (Optional).
+ */
 export const MuWSConnection=
-    (api: string)=> new MuWSConnectionBase(api)
+    (api: string, usingMuPacket: boolean = true)=> new MuWSConnectionBase(api, usingMuPacket)

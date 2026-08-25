@@ -1,74 +1,56 @@
-export interface MuPacket<TData = unknown> {
-    readonly MP_ID: string
-    readonly MP_DATA: TData
+/*
+ * # MuPacket API For TypeScript | MuPacketAPI4TS #
+ *
+ * | TinyNova V0 |
+ * |     1.0     |
+ *
+ * Author: MuMuBotV1 & Mu_Cloud
+ */
+
+/**
+ * MuPacket Base
+ *
+ * Using in MuView-Frontend
+ *
+ * Structure:
+ * {
+ *     MP_ID: string,
+ *     MP_DATA: T?
+ * }
+ */
+export interface MuPacketData<T extends object = object> {
+    MP_ID: string;
+    MP_DATA: T;
+    CID: number;
 }
 
-export type MuPacketJSON<TData = unknown> = {
-    MP_ID: string
-    MP_DATA: TData
-}
+export abstract class MuPacket<T extends object = object> {
+    readonly MP_ID: string;
+    readonly MP_DATA: T;
+    readonly CID: number;
 
-export type MuPacketDataValidator<TData> = (data: unknown) => data is TData
+    constructor(data: MuPacketData) {
+        this.MP_ID = data.MP_ID;
+        this.MP_DATA = data.MP_DATA as T;
+        this.CID = data.CID;
+    }
 
-export interface MuPacketDefinition<
-    TData = unknown,
-    TPacket extends MuPacket<TData> = MuPacket<TData>,
-> {
-    readonly MP_ID: string
-    readonly packetName?: string
-    readonly isMP_DATA: MuPacketDataValidator<TData>
-    readonly fromJSON: (data: TData, raw: MuPacketJSON<TData>) => TPacket
-    readonly toJSON?: (packet: TPacket) => MuPacketJSON<TData>
-}
-
-export class MuPacketError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = new.target.name
+    toJSON(): MuPacketData {
+        return {
+            MP_ID: this.MP_ID,
+            MP_DATA: this.MP_DATA,
+            CID: this.CID,
+        };
     }
 }
 
-export class MuPacketRegistrationError extends MuPacketError {}
-
-const MuPacketPool = new Map<string, MuPacketDefinition<unknown, MuPacket<unknown>>>()
-
-export const isRecord = (value: unknown): value is Record<PropertyKey, unknown> => {
-    return typeof value === "object" && value !== null
+export interface ExecutableMuPacket {
+    execute(): void | Promise<void>;
 }
 
-export const isMuPacketObject = (value: unknown): value is MuPacketJSON => {
-    return isRecord(value)
-        && typeof value.MP_ID === "string"
-        && "MP_DATA" in value
-}
-
-export const reg = <TData, TPacket extends MuPacket<TData>>(
-    definition: MuPacketDefinition<TData, TPacket>,
-) => {
-    if (!definition.MP_ID.trim()) {
-        throw new MuPacketRegistrationError("MP_ID cannot be empty.")
-    }
-
-    if (MuPacketPool.has(definition.MP_ID)) {
-        throw new MuPacketRegistrationError(`MP_ID already in use: ${definition.MP_ID}`)
-    }
-
-    MuPacketPool.set(
-        definition.MP_ID,
-        definition as unknown as MuPacketDefinition<unknown, MuPacket<unknown>>,
-    )
-    return definition
-}
-
-export const getMuPacketDefinition = (mpid: string) => {
-    return MuPacketPool.get(mpid)
-}
-
-export const getMuPacketDefinitions = () => {
-    return Array.from(MuPacketPool.values())
-}
-
-export const check = (mp: MuPacket | string) => {
-    const mpid = typeof mp === "string" ? mp : mp.MP_ID
-    return MuPacketPool.has(mpid)
+export abstract class ExecutableMuPacketBase<T extends object = object>
+    extends MuPacket<T>
+    implements ExecutableMuPacket
+{
+    abstract execute(): void | Promise<void>;
 }
