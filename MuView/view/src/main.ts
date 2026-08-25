@@ -1,12 +1,11 @@
 import {computed, createApp} from 'vue'
-import {createPinia, defineStore} from 'pinia'
+import {createPinia} from 'pinia'
 import '@/style.css'
 import App from '@/App.vue'
 import {router} from '@/router'
 import {createI18n, useI18n} from "vue-i18n"
 import 'overlayscrollbars/overlayscrollbars.css'
-import 'vue-sonner/style.css'
-import {Home, NotebookText} from "@lucide/vue";
+import {Box, Home} from "@lucide/vue";
 import {useStorage} from "@vueuse/core";
 
 // Define App Info to MuView.
@@ -30,28 +29,66 @@ const i18n= createI18n({
   messages: {
     '简体中文':{
       sidebar:{
-        example: "示例页面",
-        home: "主页面",
         internal: {
           localeSelector: "语言",
           colorChanger: {
             inDark: "明亮模式",
             inLight: "暗黑模式"
           },
-        }
+        },
+        home: "主页面",
+        env: "环境管理",
+      },
+      muPerformanceCard: {
+        title: "总览",
+        server: {
+          title: "服务器",
+          online: "正在运行的",
+          stopped: "已停止的",
+          total: "总量",
+        },
+        performance: {
+          title: "性能",
+          cpu: "CPU 用量",
+          mem: "运行内存用量",
+        },
+        appInfo: {
+          title: "MK-ServerLauncher 应用信息",
+          coreLabel: "核心",
+          versionLabel: "核心版本",
+        },
       },
     },
     'English':{
       sidebar:{
-        example: "Example",
-        home: "Home",
         internal: {
           localeSelector: "Language",
           colorChanger: {
             inDark: "Light Mode",
             inLight: "Dark Mode"
           },
-        }
+        },
+        home: "Home",
+        env: "Environment"
+      },
+      muPerformanceCard: {
+        title: "Overview",
+        server: {
+          title: "Server",
+          online: "Online",
+          stopped: "Stopped",
+          total: "Total",
+        },
+        performance: {
+          title: "Performance",
+          cpu: "CPU Usage",
+          mem: "MEM Usage",
+        },
+        appInfo: {
+          title: "MK-ServerLauncher APP Info",
+          coreLabel: "Core",
+          versionLabel: "Version",
+        },
       },
     },
   }
@@ -63,15 +100,15 @@ export function useSidebarMenus() {
 
   const menus = computed(() => [
     {
-      title: t('sidebar.example'),
-      url: '/example',
-      icon: NotebookText,
-    },
-    {
       title: t('sidebar.home'),
       url: '/',
       icon: Home,
     },
+    {
+      title: t('sidebar.env'),
+      url: '/env',
+      icon: Box,
+    }
   ])
 
   return { menus }
