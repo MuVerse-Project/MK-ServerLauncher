@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { canAccessRole, fetchSession, type UserRole } from '@muapi/auth'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -15,9 +14,9 @@ export const router = createRouter({
       component: () => import('@muview/AboutView.vue'),
     },
     {
-      path: '/example',
-      name: 'Example',
-      component: () => import('@view/ExampleView.vue'),
-    }
+      path: '/env',
+      name: 'Environment',
+      component: () => import('@view/muenv/EnvView.vue')
+    },
   ],
 })
