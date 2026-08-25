@@ -33,10 +33,10 @@ object MuEnvironmentService {
 
     fun delMuEnvironment(evid: String): MuPacket {
         val callback = EnvPool.delEnv(evid)
-        if(callback.isOk){
-            return MuMsgOKPacket("Java Environment Deleted")
+        return if(callback.isOk){
+            MuMsgOKPacket("Java Environment Deleted")
         }else{
-            return MuMsgErrPacket("Java Environment Delete Failed: ${callback.msg}")
+            MuMsgErrPacket("Java Environment Delete Failed: ${callback.msg}")
         }
     }
 }
