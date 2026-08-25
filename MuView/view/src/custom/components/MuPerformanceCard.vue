@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref, shallowRef} from "vue";
 import {useTransition} from "@vueuse/core";
-import {MuWSConnection} from "@muapi/MuCoreConnector";
+import {MuWSConnection} from "@/api/MuCoreConnector.ts";
 import {Card, CardContent, CardHeader, CardTitle} from "@shadcn/card";
 import {Skeleton} from "@shadcn/skeleton";
+import MuDashboard from "@mucom/MuDashboard.vue";
+import {MuStatusPacket} from "@/custom/api/MuStatusPacket.ts";
 
 let tsk = -1
 let onLoading = ref(true)
@@ -13,9 +15,9 @@ onMounted(() => {
   let wsMsg
   if(tsk === -1){
     tsk = setInterval(() => {
-      if(ws.getMsg() != undefined){
-        wsMsg = ws.getMsg()
-        console.log(wsMsg)
+      const rawMsg = ws.getMsg()
+      if(rawMsg instanceof MuStatusPacket){
+        wsMsg = rawMsg.MP_DATA
         processCoreData(wsMsg)
       }
     }, 1000)
@@ -73,74 +75,73 @@ let TotalServerCountAnime = useTransition(
 </script>
 
 <template>
-  <card class="max-w-150">
+  <card>
     <card-header>
       <card-title>
-        Overview
+        {{ $t("muPerformanceCard.title") }}
       </card-title>
     </card-header>
     <card-content>
       <div class="flex flex-col gap-5">
-        <div class="flex md:flex-row flex-col gap-10 justify-between">
+        <div class="flex md:flex-row flex-col gap-20 justify-between">
           <div class="flex flex-col gap-y-5 h-full">
-            <blockquote class="mt-6 border-l-2 border-black pl-3 font-bold">
-              Server
+            <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
+              {{ $t("muPerformanceCard.server.title") }}
             </blockquote>
-            <div class="flex flex-row gap-10 w-full justify-around items-center">
+            <div class="flex flex-row gap-10 w-full justify-around items-center mx-5">
               <div class="flex flex-col text-center text-lg">
                 <span class="mb-3">{{ OnlineServerCountAnime }}</span>
-                <span>Online</span>
+                <span>{{ $t("muPerformanceCard.server.online") }}</span>
               </div>
               <div class="flex flex-col text-center text-lg">
                 <span class="mb-3">{{ StoppedServerCountAnime }}</span>
-                <span>Stopped</span>
+                <span>{{ $t("muPerformanceCard.server.stopped") }}</span>
               </div>
               <div class="flex flex-col text-center text-lg">
                 <span class="mb-3">{{ TotalServerCount }}</span>
-                <span>Total</span>
+                <span>{{ $t("muPerformanceCard.server.total") }}</span>
               </div>
             </div>
           </div>
-          <div class="flex flex-col gap-10 h-full">
-            <blockquote class="mt-6 border-l-2 border-black pl-3 font-bold">
-              Performance
+          <div class="flex flex-col gap-y-5 h-full w-120">
+            <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
+              {{ $t("muPerformanceCard.performance.title") }}
             </blockquote>
-            <div class="flex flex-row gap-5 w-full justify-around items-center">
-              <div class="flex flex-col text-center text-lg">
-                <span class="mb-3">{{ Number.parseFloat(CpuUsage.toFixed(2)) }}%</span>
-                <span>CPU Usage%</span>
-              </div>
-              <div class="flex flex-col text-center text-lg">
-                <span class="mb-3">{{ Number.parseFloat(MemUsage.toFixed(2)) }}%</span>
-                <span>MEM Usage%</span>
-              </div>
+            <div class="flex flex-row gap-2">
+              <mu-dashboard :value="CpuUsage" :max="100" as="plain">
+                <template #header>
+                  {{ $t("muPerformanceCard.performance.cpu") }}
+                </template>
+                <template #footer="{ percent }">
+                  {{ percent }}%
+                </template>
+              </mu-dashboard>
+              <mu-dashboard :value="MemUsage" :max="100" as="plain">
+                <template #header>
+                  {{ $t("muPerformanceCard.performance.mem") }}
+                </template>
+                <template #footer="{ percent }">
+                  {{ percent }}%
+                </template>
+              </mu-dashboard>
             </div>
+
           </div>
         </div>
         <div class="flex flex-col gap-y-5 h-full overflow-hidden">
-          <blockquote class="mt-6 border-l-2 border-black pl-3 font-bold">
-            MK-ServerLauncher APP Info
+          <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
+            {{ $t("muPerformanceCard.appInfo.title") }}
           </blockquote>
           <div class="flex flex-col w-full">
             <div class="flex flex-row items-center">
-              <span class="font-bold">Core:</span>
+              <span class="font-bold">{{ $t("muPerformanceCard.appInfo.coreLabel") }}:</span>
               <skeleton v-if="onLoading" class="ml-2 h-5 w-20" />
-              <span v-else>{{ MuCoreName }}</span>
+              <span v-else class="ml-2">{{ MuCoreName }}</span>
             </div>
             <div class="flex flex-row items-center">
-              <span class="font-bold">Version:</span>
+              <span class="font-bold">{{ $t("muPerformanceCard.appInfo.versionLabel") }}:</span>
               <skeleton v-if="onLoading" class="ml-2 h-5 w-20" />
-              <span v-else>{{ MuCoreVer }}</span>
-            </div>
-            <div class="flex flex-row items-center">
-              <span class="font-bold">Plugin Count:</span>
-              <skeleton v-if="onLoading" class="ml-2 h-5 w-20" />
-              <span v-else>0</span>
-            </div>
-            <div class="flex flex-row items-center">
-              <span class="font-bold">TemplatePack Count:</span>
-              <skeleton v-if="onLoading" class="ml-2 h-5 w-20" />
-              <span v-else>0</span>
+              <span v-else class="ml-2">{{ MuCoreVer }}</span>
             </div>
           </div>
         </div>
