@@ -6,7 +6,9 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
+import java.io.File
 import java.lang.reflect.Type
+import java.nio.file.Path
 
 /**
  *  Java Environment Serializer
@@ -35,7 +37,7 @@ object JavaEnvironmentAdapter: JsonSerializer<JavaEnvironment>, JsonDeserializer
         check(raw.has("EV_LOC")) { "Expected a EV_LOC but empty"}
         val name = raw.get("EV_NAME").asString
         val loc = raw.get("EV_LOC").asString
-        return JavaEnvironment(name, loc)
+        return JavaEnvironment(name, Path.of(loc))
     }
 
 }

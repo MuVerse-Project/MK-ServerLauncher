@@ -6,6 +6,7 @@ import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgOK
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgWarnPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv.MuEnvInfoPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muenv.MuEnvListPacket
+import java.nio.file.Path
 
 object MuEnvironmentService {
 
@@ -21,8 +22,8 @@ object MuEnvironmentService {
     }
 
 
-    fun regMuEnvironment(ev: JavaEnvironment): MuPacket {
-        val callback = EnvPool.regEnv(ev)
+    fun regMuEnvironment(name: String, path: String): MuPacket {
+        val callback = EnvPool.regEnv(name, path)
         if(callback.isOk){
             return MuMsgOKPacket("Java Environment Registered")
         }else{

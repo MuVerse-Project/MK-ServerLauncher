@@ -59,7 +59,7 @@ val createMuEnvPacketInfo = object : MuPacketInfo<CreateMuEnvPacket> {
         if(vaild){
             val name = data["name"].asString
             val path = data["path"].asString
-            return CreateMuEnvPacket(JavaEnvironment(name, path), cid)
+            return CreateMuEnvPacket(name, path, cid)
         }else{
             throw UnsupportedOperationException("Do not read MP_DATA from MuPacket")
         }
