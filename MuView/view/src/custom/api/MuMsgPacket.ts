@@ -14,13 +14,13 @@ import {MuPacketRegistry} from "@/api/mupacket/MuPacketFactory.ts";
  * MP_DATA:
  * ```
  * {
- *     type: "OK" | "WARN" | "TIP" | "ERROR" | "INFO"
+ *     type: "OK" | "WARN" | "TIP" | "ERR" | "INFO"
  *     msg: string
  * }
  * ```
  */
 interface MuMsgPacket_MPDefinition{
-    status: "OK" | "WARN" | "TIP" | "ERROR" | "INFO"
+    status: "OK" | "WARN" | "TIP" | "ERR" | "INFO"
     msg: string
 }
 
@@ -36,15 +36,13 @@ export class MuMsgPacket extends ExecutableMuPacketBase<MuMsgPacket_MPDefinition
     execute(): void{
         const type = this.MP_DATA.status
         const msg = this.MP_DATA.msg
-        toast.info("???")
-        console.log(type, msg)
         if(type === "OK"){
             toast.success(msg)
         }else if(type === "INFO"){
             toast.info(msg)
         }else if(type === "WARN"){
             toast.warning(msg)
-        }else if(type === "ERROR"){
+        }else if(type === "ERR"){
             toast.error(msg)
         }else if(type === "TIP"){
             toast.custom(h("div", {class: "flex flex-row gap-5"}, [h(Info), h(msg)]))
