@@ -37,29 +37,31 @@ const clear = () => {
     <DialogTrigger>
       <Button class="bg-green-600 hover:bg-green-700">
         <Plus/>
-        Import
+        {{ $t("muenv.importer.button") }}
       </Button>
     </DialogTrigger>
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Import Environment</DialogTitle>
+        <DialogTitle>{{ $t("muenv.importer.title") }}</DialogTitle>
       </DialogHeader>
       <form>
         <FieldGroup>
           <Field>
-            <FieldLabel for="ev_name">Name</FieldLabel>
+            <FieldLabel for="ev_name">{{ $t("muenv.importer.name") }}</FieldLabel>
             <Input id="ev_name" type="text" v-model="ev_name"/>
           </Field>
           <Field>
-            <FieldLabel for="ev_loc">Path</FieldLabel>
+            <FieldLabel for="ev_loc">{{ $t("muenv.importer.path") }}</FieldLabel>
             <Input id="ev_loc" type="text" v-model="ev_loc"/>
           </Field>
         </FieldGroup>
       </form>
       <DialogFooter>
         <DialogClose>
-          <Button variant="outline" @click.capture="clear">Cancel</Button>
-          <Button class="bg-green-600 hover:bg-green-700" @click="submit()">Import</Button>
+          <Button variant="outline" @click.capture="clear">{{ $t("muenv.importer.cancel") }}</Button>
+        </DialogClose>
+        <DialogClose>
+          <Button class="bg-green-600 hover:bg-green-700" @click="submit()">{{ $t("muenv.importer.import") }}</Button>
         </DialogClose>
       </DialogFooter>
     </DialogContent>

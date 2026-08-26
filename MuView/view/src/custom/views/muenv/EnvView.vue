@@ -25,7 +25,7 @@ import {Input} from "@shadcn/input";
 import {refreshMuEnvList, MuEnvList, type MuEnv} from "@view/muenv/muenv.ts";
 import EnvTableRowMenu from "@view/muenv/EnvTableRowMenu.vue";
 import EnvImporter from "@view/muenv/EnvImporter.vue";
-import {toast} from "vue-sonner";
+import {useI18n} from "vue-i18n";
 
 const features = tableFeatures({
   columnFilteringFeature,
@@ -42,15 +42,16 @@ const features = tableFeatures({
 })
 
 const columnsBase = createColumnHelper<typeof features, MuEnv>()
+const {t} = useI18n()
 
 // Environment Table Columns Definition
 const columns = columnsBase.columns([
     columnsBase.accessor("EV_NAME", {
-      header: () => h('div', { class: "text-left" }, 'Name'),
+      header: () => h('div', { class: "text-left" }, t("muenv.table.title.name")),
       cell: ({row}) => h('div', { class: "text-left text-md" }, row.getValue('EV_NAME'))
     }),
     columnsBase.accessor("EV_VER", {
-      header: () => h('div', { class: "text-left" }, 'Version'),
+      header: () => h('div', { class: "text-left" }, t("muenv.table.title.version")),
       cell: ({row}) => h('div', { class: "text-left text-md" }, row.getValue('EV_VER'))
     }),
     columnsBase.display({
@@ -76,10 +77,10 @@ const table = useTable({
 <template>
   <div class="flex flex-col gap-5 w-full">
     <blockquote class="border-l-2 border-black dark:border-white pl-3 font-bold">
-      Environments
+      {{t("muenv.title")}}
     </blockquote>
     <div class="flex items-center py-4">
-      <Input class="max-w-sm mr-auto" placeholder="Filter Name..."
+      <Input class="max-w-sm mr-auto" :placeholder="t('muenv.filterPlaceholder')"
              :model-value="table.getColumn('EV_NAME')?.getFilterValue() as string"
              @update:model-value="table.getColumn('EV_NAME')?.setFilterValue($event)" />
       <div class="flex flex-row gap-2 justify-end">
@@ -128,7 +129,7 @@ const table = useTable({
             :disabled="!table.getCanPreviousPage()"
             @click="table.previousPage()"
         >
-          Previous
+          {{ t("muenv.table.page.previous") }}
         </Button>
         <Button
             variant="outline"
@@ -136,7 +137,7 @@ const table = useTable({
             :disabled="!table.getCanNextPage()"
             @click="table.nextPage()"
         >
-          Next
+          {{ t("muenv.table.page.next") }}
         </Button>
       </div>
     </div>

@@ -29,15 +29,17 @@ const props = defineProps<{
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Confirm
+            {{ $t("muenv.deleter.title") }}
           </DialogTitle>
         </DialogHeader>
-        <span>Surely to Delete this Environment? (Not delete file)</span>
-        <span class="text-sm text-gray-400">If you want to re-register this Environment, you can using "Import" on Environment Page</span>
+        <span>{{ $t("muenv.deleter.description") }}</span>
+        <span class="text-sm text-gray-400">{{ $t("muenv.deleter.description2") }}</span>
         <DialogFooter>
           <DialogClose>
-            <Button variant="outline">Cancel</Button>
-            <Button variant="destructive" @click="delMuEnv(props.env)">Confirm</Button>
+            <Button variant="outline">{{ $t("muenv.deleter.cancel") }}</Button>
+          </DialogClose>
+          <DialogClose>
+            <Button variant="destructive" @click="delMuEnv(props.env)">{{ $t("muenv.deleter.confirm") }}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

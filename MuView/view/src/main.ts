@@ -58,6 +58,35 @@ const i18n= createI18n({
           versionLabel: "核心版本",
         },
       },
+      muenv:{
+        title: "环境",
+        filterPlaceholder: "通过环境名查找...",
+        importer: {
+          button: "导入",
+          title: "导入环境",
+          name: "环境名",
+          path: "路径",
+          cancel: "取消",
+          import: "导入",
+        },
+        deleter: {
+          title: "确定？",
+          description: "确定要删除这个环境？(这不会删除文件)",
+          description2: "如果你想删除之后重新导入这个环境，你可以通过“导入”按键重新导入",
+          cancel: "取消",
+          confirm: "确认",
+        },
+        table: {
+          title: {
+            name: "环境名",
+            version: "版本（提供商版本）",
+          },
+          page: {
+            previous: "上一页",
+            next: "下一页",
+          },
+        },
+      },
     },
     'English':{
       sidebar:{
@@ -88,6 +117,35 @@ const i18n= createI18n({
           title: "MK-ServerLauncher APP Info",
           coreLabel: "Core",
           versionLabel: "Version",
+        },
+      },
+      muenv:{
+        title: "Environment",
+        filterPlaceholder: "Filter Name...",
+        importer: {
+          button: "Import",
+          title: "Import Environment",
+          name: "Name",
+          path: "Path",
+          cancel: "Cancel",
+          import: "Import",
+        },
+        deleter: {
+          title: "Confirm",
+          description: "Surely to Delete this Environment? \n (Not delete file)",
+          description2: "If you want to re-register this Environment after delete, you can using \"Import\" on Environment Page",
+          cancel: "Cancel",
+          confirm: "Confirm",
+        },
+        table: {
+          title: {
+            name: "Name",
+            version: "Version (Vendor)",
+          },
+          page: {
+            previous: "Previous",
+            next: "Next",
+          },
         },
       },
     },
