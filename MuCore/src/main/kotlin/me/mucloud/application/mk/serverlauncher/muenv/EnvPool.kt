@@ -94,8 +94,14 @@ object EnvPool {
     fun delEnv(envName: String): MuStateResult{
         val callback = getEnv(envName)
         if (!callback.isOk) { return MuStateResult(false, "Env could not be deleted: ${callback.msg}") }
-        val env = callback.value!!;jEnvs.remove(env);save()
-        return MuStateResult(true, "Deleted: ${env.name}")
+        val env = callback.value!!
+        if(env.name != "SysEnv" && env.name != "Runtime"){
+            jEnvs.remove(env)
+            save()
+            return MuStateResult(true, "Deleted: ${env.name}")
+        }else{
+            return MuStateResult(false, "Env could not be deleted: \"SysEnv\" or \"Runtime\" Environment not allowed to delete")
+        }
     }
     //He:关于这里我把因为忘了语法糖咋写了就重写成了正常风格
 
