@@ -17,7 +17,6 @@ import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironmentAdapter
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketAdapter
-import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerAdapter
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerType
@@ -25,6 +24,7 @@ import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerTypeSerialize
 import me.mucloud.application.mk.serverlauncher.muview.mulink.initWebSocket
 import me.mucloud.application.mk.serverlauncher.muview.view.initEnvRoute
 import me.mucloud.application.mk.serverlauncher.muview.view.initServerRoute
+import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.seconds
 
 val MuCore: MuCoreMini = MuCoreMini
@@ -37,7 +37,12 @@ var MuView_Port: Int = MuCore.getMuCoreConfig().getMuViewPort()
 
 fun main() {
     MuCore.start()
-    MuView = embeddedServer(Netty, port = MuView_Port, module = Application::module)
+    MuView = embeddedServer(
+        module = Application::module,
+        factory = Netty,
+        environment = applicationEnvironment { log = LoggerFactory.getLogger("MuView") },
+        configure = { connector { port = MuView_Port; host = "0.0.0.0" } }
+    )
     MuView.addShutdownHook(MuCore::stop)
     MuView.monitor.subscribe(ApplicationStopping) { MuCore.stop() }
     MuView.start(wait = true)
