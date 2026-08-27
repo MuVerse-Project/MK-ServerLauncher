@@ -68,6 +68,12 @@ const i18n= createI18n({
           path: "路径",
           cancel: "取消",
           import: "导入",
+          validator: {
+            ev_name: {
+              1: "必须要以字母开头",
+              2: "长度不可超过20个字符",
+            }
+          }
         },
         deleter: {
           title: "确定？",
@@ -129,6 +135,12 @@ const i18n= createI18n({
           path: "Path",
           cancel: "Cancel",
           import: "Import",
+          validator: {
+            ev_name: {
+              1: "Must be an alphabet at first",
+              2: "The length do not more than 20",
+            }
+          }
         },
         deleter: {
           title: "Confirm",
