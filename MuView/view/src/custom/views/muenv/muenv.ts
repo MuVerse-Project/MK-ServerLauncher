@@ -19,8 +19,11 @@ export const refreshMuEnvList = () =>
     })
 
 export const addMuEnv = (mp: CreateMuEnvPacket) => {
-    MuHttpClient.post<MuMsgPacket>("api/v1/env/create", mp)
-        .then(r => r.execute())
+    return MuHttpClient.post<MuMsgPacket>("api/v1/env/create", mp)
+        .then<boolean>(r => {
+            r.execute()
+            return r.MP_DATA.status == 'OK'
+        })
         .finally(() => refreshMuEnvList())
 }
 

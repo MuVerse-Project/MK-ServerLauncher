@@ -13,7 +13,7 @@ import {Button} from "@shadcn/button";
 import {Plus} from "@lucide/vue";
 import {Field, FieldError, FieldGroup, FieldLabel} from "@shadcn/field";
 import {Input} from "@shadcn/input";
-import {onMounted, ref} from "vue";
+import {ref} from "vue";
 import {useI18n} from 'vue-i18n'
 import {useForm, Field as VeeField} from "vee-validate";
 import {InputGroup, InputGroupAddon, InputGroupInput, InputGroupText} from "@shadcn/input-group";
@@ -37,7 +37,7 @@ const MuEnvSchema = z.object({
       .nonempty(t("muenv.importer.validator.ev_loc.1")),
 })
 
-const { handleSubmit, resetForm, values } = useForm({
+const { handleSubmit, resetForm } = useForm({
   validationSchema: toTypedSchema(MuEnvSchema),
   initialValues: {
     EV_NAME: '',
@@ -50,7 +50,9 @@ const onSubmit = handleSubmit((values) => {
     name: values.EV_NAME,
     path: values.EV_LOC,
   })
-  addMuEnv(rawMP)
+  addMuEnv(rawMP).then(cb => {
+    isOpen.value = !cb
+  })
 })
 
 </script>
@@ -67,17 +69,17 @@ const onSubmit = handleSubmit((values) => {
       <DialogHeader>
         <DialogTitle>{{ t("muenv.importer.title") }}</DialogTitle>
       </DialogHeader>
-      <form @submit="onSubmit">
+      <form id="env-form" @submit="onSubmit">
         <FieldGroup>
-          <VeeField v-slot="{ componentField, value, errors }" name="EV_NAME" validateOnBlur>
+          <VeeField v-slot="{ componentField, value, errors }" name="EV_NAME" validateOnChange>
             <Field :data-invaild="!!errors.length">
               <FieldLabel for="ev_name">{{ t("muenv.importer.name") }}</FieldLabel>
               <InputGroup>
                 <InputGroupInput
                     id="ev_name"
+                    v-bind="componentField"
                     type="text"
                     :aria-invalid="!!errors.length"
-                    v-bind="componentField"
                 />
                 <InputGroupAddon align="inline-end">
                   <InputGroupText>
@@ -88,7 +90,7 @@ const onSubmit = handleSubmit((values) => {
               <FieldError v-if="errors.length" :errors="errors"/>
             </Field>
           </VeeField>
-          <VeeField v-slot="{ componentField, errors }" name="EV_LOC" validateOnBlur>
+          <VeeField v-slot="{ componentField, errors }" name="EV_LOC" validateOnChange>
             <Field :data-invaild="!!errors.length">
               <FieldLabel for="ev_loc">{{ t("muenv.importer.path") }}</FieldLabel>
               <Input
@@ -103,12 +105,10 @@ const onSubmit = handleSubmit((values) => {
         </FieldGroup>
       </form>
       <DialogFooter>
-        <DialogClose>
+        <DialogClose as-child>
           <Button variant="outline" @click.capture="resetForm()">{{ t("muenv.importer.cancel") }}</Button>
         </DialogClose>
-        <DialogClose>
-          <Button class="bg-green-600 hover:bg-green-700" type="submit">{{ t("muenv.importer.import") }}</Button>
-        </DialogClose>
+        <Button class="bg-green-600 hover:bg-green-700" type="submit" form="env-form">{{ t("muenv.importer.import") }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
