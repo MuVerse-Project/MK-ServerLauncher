@@ -38,7 +38,7 @@ const { t } = useI18n()
       </SidebarHeader>
       <SidebarContent>
         <OverlayScrollbarsComponent defer
-                                    :options="{ scrollbars: { autoHide: 'scroll' }, theme: 'os-theme-light' }"
+                                    :options="{ scrollbars: { autoHide: 'scroll' }, theme: (): string => { if(mode == 'light'){ return 'os-theme-light'} else { return 'os-theme-dark' } } }"
         >
           <SidebarGroup>
             <SidebarGroupContent>
@@ -124,9 +124,13 @@ const { t } = useI18n()
           <SidebarTrigger class="-ml-1" />
         </div>
       </header>
-      <div class="flex flex-wrap max-h-dvh gap-5 px-5">
-        <slot/>
-      </div>
+      <OverlayScrollbarsComponent defer
+                                  :options="{ scrollbars: { autoHide: 'scroll' }, theme: (): string => { if(mode == 'light'){ return 'os-theme-light'} else { return 'os-theme-dark' } } }"
+      >
+        <div class="flex flex-wrap max-h-dvh gap-5 px-5">
+          <slot/>
+        </div>
+      </OverlayScrollbarsComponent>
     </SidebarInset>
   </SidebarProvider>
 </template>
