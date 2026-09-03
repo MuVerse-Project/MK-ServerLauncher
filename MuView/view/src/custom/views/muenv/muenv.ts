@@ -3,6 +3,7 @@ import {type MuPacket} from "@/api/mupacket/MuPacket.ts";
 import {CreateMuEnvPacket} from "@/custom/api/MuEnvPacket.ts";
 import {MuMsgPacket} from "@/custom/api/MuMsgPacket.ts";
 import {ref} from "vue";
+import {defineStore} from "pinia";
 
 export interface MuEnv{
     EV_NAME: string,
@@ -17,7 +18,6 @@ export const refreshMuEnvList = () =>
         MuEnvList.value = mpJson.MP_DATA as MuEnv[]
     })
 
-
 export const addMuEnv = (mp: CreateMuEnvPacket) => {
     MuHttpClient.post<MuMsgPacket>("api/v1/env/create", mp)
         .then(r => r.execute())
@@ -31,3 +31,11 @@ export const delMuEnv = (name: string) => {
 }
 
 export const MuEnvList = ref<MuEnv[]>([])
+
+export const useEnvImporterKey = defineStore('envImporterKey', () => {
+    let EnvImporterKey = ref(0)
+    const refreshKey = () => {
+        EnvImporterKey.value++
+    }
+    return {EnvImporterKey, refreshKey}
+})

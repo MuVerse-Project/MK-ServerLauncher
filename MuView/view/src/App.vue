@@ -4,7 +4,9 @@ import MuSidebar from "@mucom/MuSidebar.vue"
 import {computed, onBeforeMount} from "vue"
 import {AppInfo} from "@/main.ts"
 
+import '@/style.css'
 import 'vue-sonner/style.css'
+import 'overlayscrollbars/overlayscrollbars.css'
 import {Toaster} from "vue-sonner";
 import {useColorMode} from "@vueuse/core";
 

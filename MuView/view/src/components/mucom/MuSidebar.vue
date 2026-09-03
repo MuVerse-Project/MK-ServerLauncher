@@ -13,9 +13,11 @@ import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
 import {useColorMode} from "@vueuse/core";
 import {TooltipProvider, Tooltip, TooltipContent, TooltipTrigger} from "@shadcn/tooltip";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@shadcn/dropdown-menu";
+import {useI18n} from "vue-i18n";
 
 const mode = useColorMode()
 const { menus } = useSidebarMenus()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -36,7 +38,7 @@ const { menus } = useSidebarMenus()
       </SidebarHeader>
       <SidebarContent>
         <OverlayScrollbarsComponent defer
-                                    :options="{ scrollbars: { autoHide: 'scroll' } }"
+                                    :options="{ scrollbars: { autoHide: 'scroll' }, theme: 'os-theme-light' }"
         >
           <SidebarGroup>
             <SidebarGroupContent>
@@ -81,7 +83,7 @@ const { menus } = useSidebarMenus()
                   <DropdownMenuTrigger as-child>
                     <SidebarMenuButton>
                       <Languages/>
-                      <span>{{ $t("sidebar.internal.localeSelector") }}</span>
+                      <span>{{ t("sidebar.internal.localeSelector") }}</span>
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -92,11 +94,11 @@ const { menus } = useSidebarMenus()
               <SidebarMenuItem>
                 <SidebarMenuButton v-if="mode == 'light'" @click="mode = 'dark'">
                   <Moon/>
-                  <span>{{ $t("sidebar.internal.colorChanger.inLight") }}</span>
+                  <span>{{ t("sidebar.internal.colorChanger.inLight") }}</span>
                 </SidebarMenuButton>
                 <SidebarMenuButton v-else @click="mode = 'light'">
                   <Sun/>
-                  <span>{{ $t("sidebar.internal.colorChanger.inDark") }}</span>
+                  <span>{{ t("sidebar.internal.colorChanger.inDark") }}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

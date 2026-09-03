@@ -10,53 +10,48 @@ import {
   DialogTrigger
 } from "@shadcn/dialog";
 import {Button} from "@shadcn/button";
-import {Plus, MoreHorizontal} from "@lucide/vue";
+import {Plus} from "@lucide/vue";
 import {Field, FieldError, FieldGroup, FieldLabel} from "@shadcn/field";
 import {Input} from "@shadcn/input";
-import {reactive, ref, watch} from "vue";
-import {CreateMuEnvPacket} from "@/custom/api/MuEnvPacket.ts";
-import {addMuEnv} from "@view/muenv/muenv.ts";
+import {onMounted, ref} from "vue";
 import {useI18n} from 'vue-i18n'
+import {useForm, Field as VeeField} from "vee-validate";
+import {InputGroup, InputGroupAddon, InputGroupInput, InputGroupText} from "@shadcn/input-group";
+import {toTypedSchema} from "@vee-validate/zod";
+import {z} from "zod";
+import {addMuEnv} from "@view/muenv/muenv.ts";
+import {CreateMuEnvPacket} from "@/custom/api/MuEnvPacket.ts";
 
 const {t} = useI18n()
 
 let isOpen = ref(false)
 
-let ev_name = ref('')
-let ev_loc = ref('')
+const MuEnvSchema = z.object({
+  EV_NAME: z
+      .string()
+      .min(4, t("muenv.importer.validator.ev_name.2"))
+      .max(20, t("muenv.importer.validator.ev_name.2"))
+      .regex(new RegExp("^[A-Za-z].*"), t("muenv.importer.validator.ev_name.1")),
+  EV_LOC: z
+      .string()
+      .nonempty(t("muenv.importer.validator.ev_loc.1")),
+})
 
-let ev_name_field_validate_result = reactive({isOk: true, msg: ""})
-
-watch([ev_name, ev_loc], () => {
-  let isOk = false;
-  let msg = "";
-  if(!ev_name.value.match("^[A-Za-z].*")){
-    msg = t("muenv.importer.validator.ev_name.1")
-  }else if(ev_name.value.length > 20){
-    msg = t("muenv.importer.validator.ev_name.2")
-  }else{
-    isOk = true
-  }
-  ev_name_field_validate_result = {
-    isOk: isOk,
-    msg: msg
+const { handleSubmit, resetForm, values } = useForm({
+  validationSchema: toTypedSchema(MuEnvSchema),
+  initialValues: {
+    EV_NAME: '',
+    EV_LOC: '',
   }
 })
 
-const submit = () => {
-  if(ev_name_field_validate_result.isOk){
-    let mp = CreateMuEnvPacket.create({name: ev_name.value, path: ev_loc.value})
-    addMuEnv(mp)
-    isOpen.value = false
-  }else{
-    isOpen.value = true
-  }
-}
-
-const clear = () => {
-  ev_name.value = ''
-  ev_loc.value = ''
-}
+const onSubmit = handleSubmit((values) => {
+  let rawMP = CreateMuEnvPacket.create({
+    name: values.EV_NAME,
+    path: values.EV_LOC,
+  })
+  addMuEnv(rawMP)
+})
 
 </script>
 
@@ -68,28 +63,52 @@ const clear = () => {
         {{ $t("muenv.importer.button") }}
       </Button>
     </DialogTrigger>
-    <DialogContent @interactOutside="clear">
+    <DialogContent @interactOutside="resetForm()">
       <DialogHeader>
-        <DialogTitle>{{ $t("muenv.importer.title") }}</DialogTitle>
+        <DialogTitle>{{ t("muenv.importer.title") }}</DialogTitle>
       </DialogHeader>
-      <form>
+      <form @submit="onSubmit">
         <FieldGroup>
-          <Field>
-            <FieldLabel for="ev_name">{{ $t("muenv.importer.name") }}</FieldLabel>
-            <Input id="ev_name" type="text" :aria-invalid="!ev_name_field_validate_result.isOk" v-model="ev_name" required/>
-            <FieldError>{{ ev_name_field_validate_result.msg }}</FieldError>
-          </Field>
-          <Field>
-            <FieldLabel for="ev_loc">{{ $t("muenv.importer.path") }}</FieldLabel>
-            <Input id="ev_loc" type="text" v-model="ev_loc"/>
-          </Field>
+          <VeeField v-slot="{ componentField, value, errors }" name="EV_NAME" validateOnBlur>
+            <Field :data-invaild="!!errors.length">
+              <FieldLabel for="ev_name">{{ t("muenv.importer.name") }}</FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                    id="ev_name"
+                    type="text"
+                    :aria-invalid="!!errors.length"
+                    v-bind="componentField"
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupText>
+                    {{ value?.length || 0 }}/20
+                  </InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
+              <FieldError v-if="errors.length" :errors="errors"/>
+            </Field>
+          </VeeField>
+          <VeeField v-slot="{ componentField, errors }" name="EV_LOC" validateOnBlur>
+            <Field :data-invaild="!!errors.length">
+              <FieldLabel for="ev_loc">{{ t("muenv.importer.path") }}</FieldLabel>
+              <Input
+                  id="ev_loc"
+                  type="text"
+                  :aria-invalid="!!errors.length"
+                  v-bind="componentField"
+              />
+              <FieldError v-if="errors.length" :errors="errors"/>
+            </Field>
+          </VeeField>
         </FieldGroup>
       </form>
       <DialogFooter>
         <DialogClose>
-          <Button variant="outline" @click.capture="clear">{{ $t("muenv.importer.cancel") }}</Button>
+          <Button variant="outline" @click.capture="resetForm()">{{ t("muenv.importer.cancel") }}</Button>
         </DialogClose>
-        <Button class="bg-green-600 hover:bg-green-700" @click="submit()">{{ $t("muenv.importer.import") }}</Button>
+        <DialogClose>
+          <Button class="bg-green-600 hover:bg-green-700" type="submit">{{ t("muenv.importer.import") }}</Button>
+        </DialogClose>
       </DialogFooter>
     </DialogContent>
   </Dialog>

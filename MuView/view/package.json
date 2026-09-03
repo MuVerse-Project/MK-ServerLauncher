@@ -13,6 +13,7 @@
     "@tanstack/vue-table": "^9.1.2",
     "@unovis/ts": "^1.6.7",
     "@unovis/vue": "^1.6.7",
+    "@vee-validate/zod": "^4.15.1",
     "@vueuse/core": "^14.4.0",
     "axios": "^1.15.1",
     "class-variance-authority": "^0.7.1",
@@ -22,10 +23,12 @@
     "pinia": "^3.0.4",
     "reka-ui": "^2.10.4",
     "tailwind-merge": "^3.6.0",
+    "vee-validate": "^4.15.1",
     "vue": "^3.5.32",
     "vue-i18n": "^11.4.5",
     "vue-router": "^5.0.4",
-    "vue-sonner": "^2.0.9"
+    "vue-sonner": "^2.0.9",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",

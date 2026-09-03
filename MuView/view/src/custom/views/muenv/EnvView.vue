@@ -22,10 +22,11 @@ import {
 import {h} from "vue";
 import {Button} from "@shadcn/button";
 import {Input} from "@shadcn/input";
-import {refreshMuEnvList, MuEnvList, type MuEnv} from "@view/muenv/muenv.ts";
+import {refreshMuEnvList, MuEnvList, type MuEnv, useEnvImporterKey} from "@view/muenv/muenv.ts";
 import EnvTableRowMenu from "@view/muenv/EnvTableRowMenu.vue";
 import EnvImporter from "@view/muenv/EnvImporter.vue";
 import {useI18n} from "vue-i18n";
+import {storeToRefs} from "pinia";
 
 const features = tableFeatures({
   columnFilteringFeature,
@@ -43,6 +44,9 @@ const features = tableFeatures({
 
 const columnsBase = createColumnHelper<typeof features, MuEnv>()
 const {t} = useI18n()
+const envImporterKeyStore = useEnvImporterKey()
+const { EnvImporterKey } = storeToRefs(envImporterKeyStore)
+
 
 // Environment Table Columns Definition
 const columns = columnsBase.columns([
@@ -84,7 +88,7 @@ const table = useTable({
              :model-value="table.getColumn('EV_NAME')?.getFilterValue() as string"
              @update:model-value="table.getColumn('EV_NAME')?.setFilterValue($event)" />
       <div class="flex flex-row gap-2 justify-end">
-        <EnvImporter/>
+        <EnvImporter :key="EnvImporterKey" @click.capture="console.log(EnvImporterKey)"/>
       </div>
     </div>
     <Table>

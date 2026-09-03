@@ -1,12 +1,11 @@
 import {computed, createApp} from 'vue'
 import {createPinia} from 'pinia'
-import '@/style.css'
 import App from '@/App.vue'
 import {router} from '@/router'
 import {createI18n, useI18n} from "vue-i18n"
-import 'overlayscrollbars/overlayscrollbars.css'
 import {Box, Home} from "@lucide/vue";
 import {useStorage} from "@vueuse/core";
+import {useEnvImporterKey} from "@view/muenv/muenv.ts";
 
 // Define App Info to MuView.
 export const AppInfo = {
@@ -21,7 +20,7 @@ export const AppInfo = {
   }
 }
 
-const i18n= createI18n({
+export const i18n = createI18n({
   legacy: false,
   locale: '简体中文',
   fallbackLocale: 'English',
@@ -71,7 +70,10 @@ const i18n= createI18n({
           validator: {
             ev_name: {
               1: "必须要以字母开头",
-              2: "长度不可超过20个字符",
+              2: "长度需要在4~20个字符内",
+            },
+            ev_loc: {
+              1: "不能为空",
             }
           }
         },
@@ -137,8 +139,11 @@ const i18n= createI18n({
           import: "Import",
           validator: {
             ev_name: {
-              1: "Must be an alphabet at first",
-              2: "The length do not more than 20",
+              1: "Must be a letter at first",
+              2: "Must be between 3 and 10 characters",
+            },
+            ev_loc: {
+              1: "Do not empty",
             }
           }
         },
@@ -186,10 +191,11 @@ export function useSidebarMenus() {
 
 export const i18nLocale = useStorage('locale', i18n.global.locale)
 
-export function useLocale(locale: string) {
+export const useLocale = (locale: string) => {
   i18nLocale.value = locale
   // @ts-ignore
   i18n.global.locale.value = i18nLocale.value
+  useEnvImporterKey().refreshKey()
 }
 
 const app = createApp(App)
