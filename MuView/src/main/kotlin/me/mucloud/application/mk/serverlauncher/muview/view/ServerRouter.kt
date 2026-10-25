@@ -1,11 +1,13 @@
 package me.mucloud.application.mk.serverlauncher.muview.view
 
 import com.google.gson.JsonObject
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.getValue
+import me.mucloud.application.mk.serverlauncher.mucore.MuStateResult
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 import me.mucloud.application.mk.serverlauncher.muserver.MuServerService
@@ -14,6 +16,14 @@ import me.mucloud.application.mk.serverlauncher.muview.MuView
 fun Application.initServerRoute() {
     routing {
         get("muclose"){
+            if (!call.isLoopbackRequest()) {
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    MuStateResult(false, "MuView shutdown is restricted to loopback requests.")
+                )
+                return@get
+            }
+            call.respond(MuStateResult(true, "MuView is shutting down."))
             MuView.stop()
         }
         route("api/v1/server") {
