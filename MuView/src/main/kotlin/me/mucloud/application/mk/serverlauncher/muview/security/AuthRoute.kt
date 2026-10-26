@@ -5,12 +5,13 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgErrPacket
 
 /**
  * ## 访问守卫
  *
- * 在路由之前拦一道:启用鉴权后,除了登录/登出路径,任何未登录请求都拿不到内容。
- * 接口与 WebSocket 返回 401,页面请求跳转到登录页。
+ * 只拦截**接口与 WebSocket**;静态资源与 SPA 路由放行,
+ * 这样登录界面可以由前端自己渲染(与主界面同一套主题与组件)。
  *
  * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
@@ -18,48 +19,59 @@ import io.ktor.server.routing.*
 val MuViewAccessGuard = createApplicationPlugin("MuViewAccessGuard") {
     onCall { call ->
         if (!MuViewAuth.enabled) return@onCall
-        val path = call.request.path()
-        if (path == MuViewAuth.LOGIN_PATH || path == MuViewAuth.LOGOUT_PATH) return@onCall
+        if (!MuViewAuth.requiresAuth(call)) return@onCall
         if (MuViewAuth.isAuthorized(call)) return@onCall
-        MuViewAuth.reject(call)
+        call.respond(
+            HttpStatusCode.Unauthorized,
+            MuMsgErrPacket("Unauthorized: MuView access token required."),
+        )
     }
 }
 
 /**
- * 注册登录/登出路由。
+ * 注册鉴权接口。
  *
- * - `GET  /login`  展示登录页
- * - `POST /login`  校验令牌并签发会话
- * - `GET|POST /logout` 注销会话
+ * - `GET  /api/v1/auth/session` 查询当前会话
+ * - `POST /api/v1/auth/login`   提交令牌,成功后写入会话 Cookie
+ * - `POST /api/v1/auth/logout`  注销会话
+ *
+ * 这三个接口本身不经过 [MuViewAccessGuard] 的拦截判断,因为路径虽在 `/api/` 下,
+ * 但必须允许未登录访问;放行逻辑由 [MuViewAuth.requiresAuth] 的调用方(守卫)负责,
+ * 这里通过"会话接口白名单"实现。
  *
  * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
  */
 fun Application.initAuthRoute() {
     routing {
-        get(MuViewAuth.LOGIN_PATH) {
-            call.respondText(MuViewAuth.loginPage(), ContentType.Text.Html)
-        }
-
-        post(MuViewAuth.LOGIN_PATH) {
-            val form = call.receiveParameters()
-            val provided = form["token"]
-            if (MuViewAuth.verify(provided)) {
-                MuViewAuth.issueSession(call)
-                call.respondRedirect("/")
-            } else {
-                // 不给提示"令牌错误"以外的东西,避免额外信息泄露
-                call.respondText(
-                    MuViewAuth.loginPage("令牌不正确"),
-                    ContentType.Text.Html,
-                    HttpStatusCode.Unauthorized,
+        route("/api/v1/auth") {
+            get("/session") {
+                call.respond(
+                    mapOf(
+                        "authenticated" to MuViewAuth.isAuthorized(call),
+                        "authEnabled" to MuViewAuth.enabled,
+                    )
                 )
             }
-        }
 
-        get(MuViewAuth.LOGOUT_PATH) {
-            MuViewAuth.revokeSession(call)
-            call.respondRedirect(MuViewAuth.LOGIN_PATH)
+            post("/login") {
+                val body = runCatching { call.receive<Map<String, String>>() }.getOrNull()
+                val provided = body?.get("token")
+                if (!MuViewAuth.verify(provided)) {
+                    call.respond(
+                        HttpStatusCode.Unauthorized,
+                        MuMsgErrPacket("Invalid access token."),
+                    )
+                    return@post
+                }
+                MuViewAuth.issueSession(call)
+                call.respond(mapOf("authenticated" to true))
+            }
+
+            post("/logout") {
+                MuViewAuth.revokeSession(call)
+                call.respond(mapOf("authenticated" to false))
+            }
         }
     }
 }

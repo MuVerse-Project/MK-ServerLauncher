@@ -27,6 +27,14 @@ export const i18n = createI18n({
   allowComposition: true,
   messages: {
     '简体中文':{
+      login: {
+        title: "需要访问令牌",
+        description: "请输入服务端配置的 MuViewAccessToken。验证通过后会保持登录 12 小时。",
+        placeholder: "访问令牌",
+        submit: "进入",
+        submitting: "验证中...",
+        failed: "令牌不正确,请重试",
+      },
       sidebar:{
         internal: {
           localeSelector: "语言",
@@ -97,6 +105,14 @@ export const i18n = createI18n({
       },
     },
     'English':{
+      login: {
+        title: "Access token required",
+        description: "Enter the MuViewAccessToken configured on the server. The session stays valid for 12 hours.",
+        placeholder: "Access token",
+        submit: "Enter",
+        submitting: "Verifying...",
+        failed: "Invalid token, please try again",
+      },
       sidebar:{
         internal: {
           localeSelector: "Language",
