@@ -4,8 +4,8 @@ import {refreshSession} from "@muapi/session.ts"
 /**
  * 路由表。
  *
- * `/login` 标记 `meta.public`,守卫放行;其余路由在服务端启用鉴权时,
- * 未登录一律导回 `/login`。
+ * 需要侧边栏的页面挂在 `MainLayout` 下;登录页是独立页面,直接挂在根路由上,
+ * 因此不会出现在 MuSidebar 右侧。
  *
  * @since VoidLand V0 | DEV.1
  */
@@ -20,18 +20,24 @@ export const router = createRouter({
     },
     {
       path: '/',
-      name: 'Home',
-      component: () => import('@muview/HomeView.vue'),
-    },
-    {
-      path: '/about',
-      name: 'About',
-      component: () => import('@muview/AboutView.vue'),
-    },
-    {
-      path: '/env',
-      name: 'Environment',
-      component: () => import('@view/muenv/EnvView.vue')
+      component: () => import('@/layouts/MainLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'Home',
+          component: () => import('@muview/HomeView.vue'),
+        },
+        {
+          path: 'about',
+          name: 'About',
+          component: () => import('@muview/AboutView.vue'),
+        },
+        {
+          path: 'env',
+          name: 'Environment',
+          component: () => import('@view/muenv/EnvView.vue'),
+        },
+      ],
     },
   ],
 })
