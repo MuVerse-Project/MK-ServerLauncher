@@ -34,6 +34,8 @@ export const i18n = createI18n({
         submit: "进入",
         submitting: "验证中...",
         failed: "令牌不正确,请重试",
+        toggleTheme: "切换深浅色",
+        switchLocale: "切换语言",
       },
       sidebar:{
         internal: {
@@ -112,6 +114,8 @@ export const i18n = createI18n({
         submit: "Enter",
         submitting: "Verifying...",
         failed: "Invalid token, please try again",
+        toggleTheme: "Toggle theme",
+        switchLocale: "Switch language",
       },
       sidebar:{
         internal: {
