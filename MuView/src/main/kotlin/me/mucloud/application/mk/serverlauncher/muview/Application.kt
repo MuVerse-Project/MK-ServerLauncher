@@ -22,6 +22,8 @@ import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerAdapter
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerType
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerTypeSerializer
 import me.mucloud.application.mk.serverlauncher.muview.mulink.initWebSocket
+import me.mucloud.application.mk.serverlauncher.muview.security.MuViewAccessGuard
+import me.mucloud.application.mk.serverlauncher.muview.security.initAuthRoute
 import me.mucloud.application.mk.serverlauncher.muview.view.initEnvRoute
 import me.mucloud.application.mk.serverlauncher.muview.view.initServerRoute
 import org.slf4j.LoggerFactory
@@ -91,6 +93,8 @@ fun Application.initMuView(){
 
 fun Application.module() {
     installPlugins()
+    install(MuViewAccessGuard)
+    initAuthRoute()
     initServerRoute()
     initEnvRoute()
     initWebSocket()
