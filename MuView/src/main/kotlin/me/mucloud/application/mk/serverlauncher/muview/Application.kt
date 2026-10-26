@@ -8,6 +8,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.sessions.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
@@ -23,6 +24,8 @@ import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerType
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServerTypeSerializer
 import me.mucloud.application.mk.serverlauncher.muview.mulink.initWebSocket
 import me.mucloud.application.mk.serverlauncher.muview.security.MuViewAccessGuard
+import me.mucloud.application.mk.serverlauncher.muview.security.MuViewAuth
+import me.mucloud.application.mk.serverlauncher.muview.security.MuViewSession
 import me.mucloud.application.mk.serverlauncher.muview.security.initAuthRoute
 import me.mucloud.application.mk.serverlauncher.muview.view.initEnvRoute
 import me.mucloud.application.mk.serverlauncher.muview.view.initServerRoute
@@ -76,8 +79,16 @@ fun Application.installPlugins(){
         masking = false
         contentConverter = GsonWebsocketContentConverter(gson)
     }
-    install(Sessions){
-
+    install(Sessions) {
+        // 会话放在签名 Cookie 里:服务端不存状态,重启不掉登录;
+        // 签名密钥由访问令牌派生,令牌一改,旧会话立即失效。
+        cookie<MuViewSession>(MuViewAuth.SESSION_NAME) {
+            cookie.path = "/"
+            cookie.httpOnly = true
+            cookie.maxAge = MuViewAuth.SESSION_MAX_AGE_SECONDS.seconds
+            cookie.extensions["SameSite"] = "Lax"
+            transform(SessionTransportTransformerMessageAuthentication(MuViewAuth.signingKey))
+        }
     }
 }
 

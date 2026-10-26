@@ -5,13 +5,14 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgErrPacket
 
 /**
  * ## 访问守卫
  *
  * 只拦截**接口与 WebSocket**;静态资源与 SPA 路由放行,
- * 这样登录界面可以由前端自己渲染(与主界面同一套主题与组件)。
+ * 登录界面由前端自己渲染(与主界面同一套主题与组件)。
  *
  * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
@@ -32,12 +33,10 @@ val MuViewAccessGuard = createApplicationPlugin("MuViewAccessGuard") {
  * 注册鉴权接口。
  *
  * - `GET  /api/v1/auth/session` 查询当前会话
- * - `POST /api/v1/auth/login`   提交令牌,成功后写入会话 Cookie
+ * - `POST /api/v1/auth/login`   提交令牌,成功后写入签名会话 Cookie
  * - `POST /api/v1/auth/logout`  注销会话
  *
- * 这三个接口本身不经过 [MuViewAccessGuard] 的拦截判断,因为路径虽在 `/api/` 下,
- * 但必须允许未登录访问;放行逻辑由 [MuViewAuth.requiresAuth] 的调用方(守卫)负责,
- * 这里通过"会话接口白名单"实现。
+ * 登录失败按来源限流:连续失败 5 次封锁 1 分钟,成功即清零。
  *
  * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
@@ -55,21 +54,38 @@ fun Application.initAuthRoute() {
             }
 
             post("/login") {
+                val client = LoginThrottle.clientKey(call)
+                LoginThrottle.blockedFor(client)?.let { seconds ->
+                    call.response.headers.append(HttpHeaders.RetryAfter, seconds.toString())
+                    call.respond(
+                        HttpStatusCode.TooManyRequests,
+                        MuMsgErrPacket("Too many failed attempts, retry in ${seconds}s."),
+                    )
+                    return@post
+                }
+
                 val body = runCatching { call.receive<Map<String, String>>() }.getOrNull()
-                val provided = body?.get("token")
-                if (!MuViewAuth.verify(provided)) {
+                if (!MuViewAuth.verify(body?.get("token"))) {
+                    LoginThrottle.recordFailure(client)
                     call.respond(
                         HttpStatusCode.Unauthorized,
                         MuMsgErrPacket("Invalid access token."),
                     )
                     return@post
                 }
-                MuViewAuth.issueSession(call)
+
+                LoginThrottle.recordSuccess(client)
+                call.sessions.set(
+                    MuViewSession(
+                        fingerprint = MuViewAuth.currentFingerprint,
+                        issuedAt = System.currentTimeMillis() / 1000,
+                    )
+                )
                 call.respond(mapOf("authenticated" to true))
             }
 
             post("/logout") {
-                MuViewAuth.revokeSession(call)
+                call.sessions.clear<MuViewSession>()
                 call.respond(mapOf("authenticated" to false))
             }
         }
