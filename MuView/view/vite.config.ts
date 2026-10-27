@@ -26,4 +26,11 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  server: {
+    // 开发模式下把后端接口代理到本地 MuView,前端始终用同源相对路径
+    proxy: {
+      '/api': 'http://127.0.0.1:20038',
+      '/muclose': 'http://127.0.0.1:20038',
+    },
+  },
 })

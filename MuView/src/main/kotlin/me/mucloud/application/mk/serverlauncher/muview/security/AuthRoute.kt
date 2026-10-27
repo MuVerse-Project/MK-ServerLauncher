@@ -65,7 +65,7 @@ fun Application.initAuthRoute() {
                 }
 
                 val body = runCatching { call.receive<Map<String, String>>() }.getOrNull()
-                if (!MuViewAuth.verify(body?.get("token"))) {
+                if (!MuViewAuth.verify(body?.get("token")?.trim())) {
                     LoginThrottle.recordFailure(client)
                     call.respond(
                         HttpStatusCode.Unauthorized,

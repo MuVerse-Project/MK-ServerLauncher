@@ -10,8 +10,8 @@ const resolveWebSocketUrl = (api: string) => {
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws"
     const path = api.startsWith("/") ? api : `/${api}`
-    // return `${protocol}://${window.location.host}${path}`
-    return `ws://127.0.0.1:20038${path}`
+    // 与页面同源:部署在反代/自定义端口/局域网 IP 下都能直接用,不写死主机与端口
+    return `${protocol}://${window.location.host}${path}`
 }
 
 interface MuPacketAxiosConfig extends AxiosRequestConfig{
@@ -34,7 +34,8 @@ class MuHTTPClientBase{
 
     constructor() {
         this.base = axios.create({
-            baseURL: "http://127.0.0.1:20038",
+            // 同源请求:页面从哪个地址打开,就打到哪个地址
+            baseURL: window.location.origin,
             timeout: 30000,
             withCredentials: false,
             headers: { "Content-Type": "application/json", },
