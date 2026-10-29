@@ -9,6 +9,7 @@
  */
 import {reactive} from "vue"
 import {fetchSession, loginWithToken, logoutSession} from "@muapi/auth.ts"
+import {clearAccessToken, hasAccessToken, setAccessToken} from "@muapi/accessToken.ts"
 
 export interface MuSessionState {
   /** 是否已登录 */
@@ -59,12 +60,15 @@ export async function refreshSession(force: boolean = false): Promise<MuSessionS
 export async function login(token: string): Promise<boolean> {
   try {
     const data = await loginWithToken(token)
+    // 令牌只放在内存里:刷新即失效,下次进入要重新输入
+    setAccessToken(token)
     muSession.authenticated = data?.authenticated ?? true
     muSession.resolved = false
     // 登录后重新探测一次,拿到最新的 bootstrap 状态(决定要不要强制设置新令牌)
     await refreshSession(true)
     return muSession.authenticated
   } catch {
+    clearAccessToken()
     muSession.authenticated = false
     return false
   }
@@ -79,6 +83,7 @@ export async function logout(): Promise<void> {
   try {
     await logoutSession()
   } finally {
+    clearAccessToken()
     muSession.authenticated = false
     muSession.bootstrap = false
     muSession.resolved = false

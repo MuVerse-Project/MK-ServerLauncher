@@ -6,7 +6,8 @@ import {Button} from "@shadcn/button"
 import {Input} from "@shadcn/input"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@shadcn/card"
 import {updateAccessToken} from "@muapi/auth.ts"
-import {logout, refreshSession} from "@muapi/session.ts"
+import {setAccessToken} from "@muapi/accessToken.ts"
+import {refreshSession} from "@muapi/session.ts"
 import {AppInfo} from "@/main.ts"
 
 /**
@@ -42,18 +43,19 @@ async function submit() {
     if (!canSubmit.value) return
     submitting.value = true
     error.value = ""
+    const token0 = token.value.trim()
     try {
-        await updateAccessToken(token.value.trim())
+        await updateAccessToken(token0)
     } catch (err) {
         submitting.value = false
         error.value = errorMessage(err)
         return
     }
-    // 令牌换了 → 旧会话已失效,清干净再去登录页
-    await logout()
+    // 令牌已换 → 直接把新令牌放进内存,不用再登一次(旧会话本来就随签名密钥一起失效)
+    setAccessToken(token0)
     await refreshSession(true)
     submitting.value = false
-    await router.replace({path: "/login", query: {changed: "1"}})
+    await router.replace({path: "/"})
 }
 </script>
 

@@ -2,6 +2,7 @@ import axios, {type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} 
 import "@/custom/api/MuMsgPacket.ts";
 import {MuPacket, type MuPacketData} from "@/api/mupacket/MuPacket.ts";
 import {MuPacketRegistry} from "@/api/mupacket/MuPacketFactory.ts";
+import {clearAccessToken, getAccessToken} from "@/api/accessToken.ts";
 
 const resolveWebSocketUrl = (api: string) => {
     if (/^wss?:\/\//i.test(api)) {
@@ -10,8 +11,11 @@ const resolveWebSocketUrl = (api: string) => {
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws"
     const path = api.startsWith("/") ? api : `/${api}`
+    // 浏览器 WebSocket 不能自定义请求头,令牌只能走查询参数
+    const token = getAccessToken()
+    const query = token ? `${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}` : path
     // 与页面同源:部署在反代/自定义端口/局域网 IP 下都能直接用,不写死主机与端口
-    return `${protocol}://${window.location.host}${path}`
+    return `${protocol}://${window.location.host}${query}`
 }
 
 interface MuPacketAxiosConfig extends AxiosRequestConfig{
@@ -45,6 +49,13 @@ class MuHTTPClientBase{
             (config) => {
                 const muConfig = config as MuPacketAxiosConfig
 
+                // 令牌只存在内存里,每个请求现取现带;没有就不带,由服务端回 401
+                const token = getAccessToken()
+                if (token) {
+                    config.headers = config.headers ?? {}
+                    config.headers.Authorization = `Bearer ${token}`
+                }
+
                 if (muConfig.usingMuPacket === true) {
                     if(config.data instanceof MuPacket){
                         config.data = config.data.toJSON()
@@ -76,7 +87,13 @@ class MuHTTPClientBase{
 
                 return response;
             },
-            (error) => Promise.reject(error)
+            (error) => {
+                // 令牌失效(或改过令牌)时清掉内存里的那枚,让路由守卫把用户送回登录页
+                if (error?.response?.status === 401) {
+                    clearAccessToken()
+                }
+                return Promise.reject(error)
+            }
         )
     }
 

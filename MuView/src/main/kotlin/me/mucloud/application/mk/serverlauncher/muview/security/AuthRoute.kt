@@ -98,12 +98,7 @@ fun Application.initAuthRoute() {
                 }
 
                 LoginThrottle.recordSuccess(client)
-                call.sessions.set(
-                    MuViewSession(
-                        fingerprint = MuViewAuth.currentFingerprint,
-                        issuedAt = System.currentTimeMillis() / 1000,
-                    )
-                )
+                // 注意:不再写会话 Cookie。令牌只存在前端内存里,刷新/重进页面必须重新输入。
                 call.respond(mapOf("authenticated" to true))
             }
 

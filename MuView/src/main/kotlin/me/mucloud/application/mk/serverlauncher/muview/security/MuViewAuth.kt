@@ -208,6 +208,15 @@ object MuViewAuth {
      * @since VoidLand V0 | DEV.1
      */
     fun isAuthorized(call: ApplicationCall): Boolean {
+        // 1) 请求头优先:令牌只存在前端内存里,每次进入页面都要重新带上
+        val header = call.request.headers[HttpHeaders.Authorization]
+        if (header != null && header.startsWith("Bearer ", ignoreCase = true)) {
+            if (verify(header.substring("Bearer ".length).trim())) return true
+        }
+        // 2) 查询参数:给不支持自定义请求头的客户端(浏览器 WebSocket、curl)留的口子
+        val queryToken = call.request.queryParameters["token"]
+        if (queryToken != null && verify(queryToken)) return true
+        // 3) 兼容旧的会话 Cookie(现在不再签发,仅保留读取能力)
         val session = call.sessions.get<MuViewSession>() ?: return false
         return session.fingerprint == currentFingerprint
     }

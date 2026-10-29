@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import {refreshSession} from "@muapi/session.ts"
+import {hasAccessToken} from "@muapi/accessToken.ts"
 
 /**
  * 路由表。
@@ -49,6 +50,10 @@ export const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
+  // 令牌只活在当前页面实例里:没有令牌(含刷新、重开标签)一律先回登录页
+  if (!hasAccessToken() && !to.meta.public) {
+    return {path: '/login'}
+  }
   const session = await refreshSession()
   // 服务端未启用鉴权:登录页没有意义,直接回首页
   if (!session.authEnabled) {
