@@ -19,6 +19,12 @@ export const router = createRouter({
       meta: {public: true},
     },
     {
+      // 首次部署用临时令牌登录后,必须先把令牌换成自己的
+      path: '/setup-token',
+      name: 'TokenSetup',
+      component: () => import('@muview/TokenSetupView.vue'),
+    },
+    {
       path: '/',
       component: () => import('@/layouts/MainLayout.vue'),
       children: [
@@ -47,6 +53,13 @@ router.beforeEach(async (to) => {
   // 服务端未启用鉴权:登录页没有意义,直接回首页
   if (!session.authEnabled) {
     return to.meta.public && to.name === 'Login' ? {path: '/'} : true
+  }
+  // 首次初始化(用户还没设置自己的令牌):登录后强制先去设置页
+  if (session.bootstrap) {
+    if (!session.authenticated) {
+      return to.name === 'Login' ? true : {path: '/login'}
+    }
+    return to.name === 'TokenSetup' ? true : {path: '/setup-token'}
   }
   if (to.meta.public) {
     return session.authenticated ? {path: '/'} : true

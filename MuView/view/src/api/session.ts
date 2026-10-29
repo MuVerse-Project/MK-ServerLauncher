@@ -2,7 +2,7 @@
  * ## 会话状态(轻量单例)
  *
  * 路由守卫与登录页共用这一份状态,避免每次跳转都打一次接口。
- * 这里刻意不引入 Pinia:状态只有一个布尔值,用响应式对象足够,
+ * 这里刻意不引入 Pinia:状态只有几个布尔值,用响应式对象足够,
  * 也免得在路由守卫里 await store 初始化。
  *
  * @since VoidLand V0 | DEV.1
@@ -15,6 +15,8 @@ export interface MuSessionState {
   authenticated: boolean
   /** 服务端是否启用鉴权(未启用时无需登录) */
   authEnabled: boolean
+  /** 是否仍处于首次初始化:用户还没设置自己的令牌,必须先设置 */
+  bootstrap: boolean
   /** 是否已完成首次探测 */
   resolved: boolean
 }
@@ -22,6 +24,7 @@ export interface MuSessionState {
 export const muSession = reactive<MuSessionState>({
   authenticated: false,
   authEnabled: false,
+  bootstrap: false,
   resolved: false,
 })
 
@@ -38,6 +41,7 @@ export async function refreshSession(force: boolean = false): Promise<MuSessionS
     const data = await fetchSession()
     muSession.authEnabled = data?.authEnabled ?? false
     muSession.authenticated = data?.authenticated ?? false
+    muSession.bootstrap = data?.bootstrap ?? false
   } catch {
     // 接口不可用时不阻塞页面,按"未登录"处理
     muSession.authEnabled = true
@@ -56,7 +60,9 @@ export async function login(token: string): Promise<boolean> {
   try {
     const data = await loginWithToken(token)
     muSession.authenticated = data?.authenticated ?? true
-    muSession.resolved = true
+    muSession.resolved = false
+    // 登录后重新探测一次,拿到最新的 bootstrap 状态(决定要不要强制设置新令牌)
+    await refreshSession(true)
     return muSession.authenticated
   } catch {
     muSession.authenticated = false
@@ -74,6 +80,7 @@ export async function logout(): Promise<void> {
     await logoutSession()
   } finally {
     muSession.authenticated = false
-    muSession.resolved = true
+    muSession.bootstrap = false
+    muSession.resolved = false
   }
 }

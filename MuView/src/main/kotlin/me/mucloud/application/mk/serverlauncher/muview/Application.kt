@@ -82,6 +82,8 @@ fun Application.installPlugins(){
     install(Sessions) {
         // 会话放在签名 Cookie 里:服务端不存状态,重启不掉登录;
         // 签名密钥由访问令牌派生,令牌一改,旧会话立即失效。
+        // 先确保有可用令牌:配置为空时这里会生成一次性临时令牌(只在内存,WebUI 首次登录页可见)。
+        MuViewAuth.ensureBootstrapToken()
         cookie<MuViewSession>(MuViewAuth.SESSION_NAME) {
             cookie.path = "/"
             cookie.httpOnly = true

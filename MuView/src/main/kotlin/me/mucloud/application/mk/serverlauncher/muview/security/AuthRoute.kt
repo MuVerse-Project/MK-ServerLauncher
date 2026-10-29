@@ -49,8 +49,31 @@ fun Application.initAuthRoute() {
                     mapOf(
                         "authenticated" to MuViewAuth.isAuthorized(call),
                         "authEnabled" to MuViewAuth.enabled,
+                        // 还没设置自己的令牌 → 前端要引导"先设置令牌"
+                        "bootstrap" to MuViewAuth.isBootstrap,
                     )
                 )
+            }
+
+            // 首次初始化时才给的一次性临时令牌:仅本机来源可见,不落盘、不写日志。
+            get("/bootstrap") {
+                if (!MuViewAuth.isBootstrap) {
+                    call.respond(HttpStatusCode.NotFound, MuMsgErrPacket("MuView access token already configured."))
+                    return@get
+                }
+                if (!isLoopbackCall(call)) {
+                    call.respond(
+                        HttpStatusCode.Forbidden,
+                        MuMsgErrPacket("Initial token is only visible from the local machine. Configure MuViewAccessToken in MK-ServerLauncher.yml instead."),
+                    )
+                    return@get
+                }
+                val token = MuViewAuth.bootstrapTokenOrNull()
+                if (token == null) {
+                    call.respond(HttpStatusCode.NotFound, MuMsgErrPacket("No bootstrap token available."))
+                    return@get
+                }
+                call.respond(mapOf("token" to token))
             }
 
             post("/login") {
@@ -88,6 +111,36 @@ fun Application.initAuthRoute() {
                 call.sessions.clear<MuViewSession>()
                 call.respond(mapOf("authenticated" to false))
             }
+
+            // 已登录用户设置自己的令牌;成功后旧会话全部失效(签名密钥由令牌派生)。
+            post("/token") {
+                if (!MuViewAuth.isAuthorized(call)) {
+                    call.respond(HttpStatusCode.Unauthorized, MuMsgErrPacket("Unauthorized: MuView access token required."))
+                    return@post
+                }
+                val body = runCatching { call.receive<Map<String, String>>() }.getOrNull()
+                val error = MuViewAuth.setAccessToken(body?.get("token") ?: "")
+                if (error != null) {
+                    call.respond(HttpStatusCode.BadRequest, MuMsgErrPacket(error))
+                    return@post
+                }
+                call.sessions.clear<MuViewSession>()
+                call.respond(mapOf("ok" to true, "relogin" to true))
+            }
         }
     }
+}
+
+/**
+ * 是否来自本机(直连)。
+ *
+ * 只取 socket 地址、不看 `X-Forwarded-For`:反代场景下头部可伪造,
+ * 而首次初始化本来就该在本机做 —— 远端部署请在配置文件里直接写令牌。
+ *
+ * @since VoidLand V0 | DEV.1
+ * @author Mu_Mu
+ */
+private fun isLoopbackCall(call: ApplicationCall): Boolean {
+    val host = call.request.local.remoteHost
+    return host == "127.0.0.1" || host == "::1" || host.equals("localhost", ignoreCase = true)
 }

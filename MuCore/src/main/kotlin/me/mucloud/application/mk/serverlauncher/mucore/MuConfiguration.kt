@@ -27,19 +27,29 @@ class MuConfiguration{
     /**
      * MuView 的访问令牌(整站鉴权)。
      *
-     * 留空表示**不启用鉴权**(仅建议本机开发时这样);对外部署请配置随机长串,
-     * 打开页面时输入一次即可获得会话。
+     * **留空 = 用户还没设置过令牌**。这种情况由服务端在启动时生成一次性临时令牌放在内存里
+     * (不落盘),由 WebUI 首次登录页展示;用户设定自己的令牌后才写回本配置文件。
      *
      * @since VoidLand V0 | DEV.1
      * @author Mu_Mu
      */
-    private val MuViewAccessToken: String = instance.getOrElse("MuViewAccessToken", { "" })
+    fun getMuViewAccessToken(): String = instance.get<String>("MuViewAccessToken") ?: ""
+
+    /**
+     * 写入新的访问令牌并立即落盘(FileConfig 已开启 autosave)。
+     *
+     * @since VoidLand V0 | DEV.1
+     * @author Mu_Mu
+     */
+    fun setMuViewAccessToken(token: String) {
+        instance.set<Any>("MuViewAccessToken", token)
+        instance.save()
+    }
 
     fun getServerFolder(): File = ServerFolder
     fun getLogFolder(): File = LogFolder
     fun getSystemMonitorInterval(): Duration = SystemMonitorInterval
     fun getMuCorePort(): Int = MuCorePort
     fun getMuViewPort(): Int = MuViewPort
-    fun getMuViewAccessToken(): String = MuViewAccessToken
 
 }
