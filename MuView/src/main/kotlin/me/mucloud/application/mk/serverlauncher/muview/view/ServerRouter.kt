@@ -1,6 +1,7 @@
 package me.mucloud.application.mk.serverlauncher.muview.view
 
 import com.google.gson.JsonObject
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -8,12 +9,24 @@ import io.ktor.server.routing.*
 import io.ktor.server.util.getValue
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgOKPacket
 import me.mucloud.application.mk.serverlauncher.muserver.MuServerService
 import me.mucloud.application.mk.serverlauncher.muview.MuView
 
 fun Application.initServerRoute() {
     routing {
-        get("muclose"){
+        /**
+         * 关闭 MuView。
+         *
+         * 只接受 POST:避免被链接预取、图片加载之类的方式误触发。
+         * 准入由 [me.mucloud.application.mk.serverlauncher.muview.security.MuViewAccessGuard] 统一负责,
+         * 这里不再单独判断来源地址或令牌。
+         *
+         * @since VoidLand V0 | DEV.1
+         * @author Mu_Mu
+         */
+        post("muclose") {
+            call.respond(MuMsgOKPacket("MuView is shutting down."))
             MuView.stop()
         }
         route("api/v1/server") {

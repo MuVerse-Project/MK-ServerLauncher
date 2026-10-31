@@ -1,6 +1,5 @@
 <script setup lang="ts">
 
-import MuSidebar from "@mucom/MuSidebar.vue"
 import {computed, onBeforeMount} from "vue"
 import {AppInfo} from "@/main.ts"
 
@@ -25,24 +24,7 @@ const sonnerTheme = computed(() => {
 </script>
 
 <template>
-  <MuSidebar>
-    <RouterView v-slot="{ Component }">
-      <transition name="slide-fade" appear>
-        <component :is="Component" />
-      </transition>
-    </RouterView>
-  </MuSidebar>
+  <!-- 侧边栏等外壳由 MainLayout 提供;登录页这类独立页面不经过它 -->
+  <RouterView />
   <Toaster position="top-right" :theme="sonnerTheme"/>
 </template>
-
-<style scoped>
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(-20px);
-  opacity: 0;
-}
-</style>

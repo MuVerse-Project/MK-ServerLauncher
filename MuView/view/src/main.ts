@@ -27,6 +27,33 @@ export const i18n = createI18n({
   allowComposition: true,
   messages: {
     '简体中文':{
+      login: {
+        title: "需要访问令牌",
+        description: "请输入服务端配置的 MuViewAccessToken。验证通过后会保持登录 12 小时。",
+        placeholder: "访问令牌",
+        submit: "进入",
+        submitting: "验证中...",
+        failed: "令牌不正确,请重试",
+        changed: "令牌已更新,请用新令牌重新登录",
+        bootstrapTitle: "首次部署 · 一次性临时令牌",
+        bootstrapHint: "先用这枚临时令牌登录,随后会被要求设置你自己的令牌。它只在内存里,重启即失效。",
+        bootstrapCopy: "复制",
+        bootstrapCopied: "已复制",
+        toggleTheme: "切换深浅色",
+        switchLocale: "切换语言",
+      },
+      setup: {
+        title: "设置你自己的访问令牌",
+        description: "首次部署时用临时令牌登录即可;之后更换令牌需要先验证当前令牌。",
+        currentToken: "当前令牌",
+        token: "新令牌(至少 10 位)",
+        confirm: "再输一次",
+        submit: "保存并重新登录",
+        submitting: "保存中...",
+        tooShort: "令牌至少 {min} 位",
+        mismatch: "两次输入不一致",
+        failed: "保存失败,请重试",
+      },
       sidebar:{
         internal: {
           localeSelector: "语言",
@@ -34,6 +61,7 @@ export const i18n = createI18n({
             inDark: "明亮模式",
             inLight: "暗黑模式"
           },
+          logout: "退出登录",
         },
         home: "主页面",
         env: "环境管理",
@@ -97,6 +125,33 @@ export const i18n = createI18n({
       },
     },
     'English':{
+      login: {
+        title: "Access token required",
+        description: "Enter the MuViewAccessToken configured on the server. The session stays valid for 12 hours.",
+        placeholder: "Access token",
+        submit: "Enter",
+        submitting: "Verifying...",
+        failed: "Invalid token, please try again",
+        changed: "Token updated, please sign in with the new one",
+        bootstrapTitle: "First run · one-time token",
+        bootstrapHint: "Sign in with this temporary token first; you will be asked to set your own token. It lives in memory only and is regenerated on restart.",
+        bootstrapCopy: "Copy",
+        bootstrapCopied: "Copied",
+        toggleTheme: "Toggle theme",
+        switchLocale: "Switch language",
+      },
+      setup: {
+        title: "Set your own access token",
+        description: "First deployment only needs the temporary token; later changes require your current token first.",
+        currentToken: "Current token",
+        token: "New token (min 10 chars)",
+        confirm: "Repeat it",
+        submit: "Save and sign in again",
+        submitting: "Saving...",
+        tooShort: "Token must be at least {min} characters",
+        mismatch: "The two inputs do not match",
+        failed: "Failed to save, please try again",
+      },
       sidebar:{
         internal: {
           localeSelector: "Language",
@@ -104,6 +159,7 @@ export const i18n = createI18n({
             inDark: "Light Mode",
             inLight: "Dark Mode"
           },
+          logout: "Sign out",
         },
         home: "Home",
         env: "Environment"
