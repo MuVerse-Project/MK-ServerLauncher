@@ -7,7 +7,7 @@ import {Input} from "@shadcn/input"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@shadcn/card"
 import {updateAccessToken} from "@muapi/auth.ts"
 import {setAccessToken} from "@muapi/accessToken.ts"
-import {refreshSession} from "@muapi/session.ts"
+import {muSession, refreshSession} from "@muapi/session.ts"
 import {AppInfo} from "@/main.ts"
 
 /**
@@ -23,15 +23,22 @@ const router = useRouter()
 
 const token = ref("")
 const confirmToken = ref("")
+const currentToken = ref("")
 const submitting = ref(false)
 const error = ref("")
 
 const MIN_LENGTH = 10
 
+/** 是否处于首次部署(临时令牌阶段);非首次时必须验旧令牌 */
+const isBootstrap = computed(() => muSession.bootstrap)
 const mismatch = computed(() => confirmToken.value.length > 0 && token.value !== confirmToken.value)
 const tooShort = computed(() => token.value.length > 0 && token.value.trim().length < MIN_LENGTH)
 const canSubmit = computed(
-    () => token.value.trim().length >= MIN_LENGTH && token.value === confirmToken.value && !submitting.value,
+    () =>
+        token.value.trim().length >= MIN_LENGTH &&
+        token.value === confirmToken.value &&
+        (isBootstrap.value || currentToken.value.trim().length > 0) &&
+        !submitting.value,
 )
 
 function errorMessage(err: unknown): string {
@@ -45,7 +52,7 @@ async function submit() {
     error.value = ""
     const token0 = token.value.trim()
     try {
-        await updateAccessToken(token0)
+        await updateAccessToken(token0, currentToken.value.trim())
     } catch (err) {
         submitting.value = false
         error.value = errorMessage(err)
@@ -73,12 +80,20 @@ async function submit() {
       <CardContent>
         <form class="flex flex-col gap-4" @submit.prevent="submit">
           <Input
+              v-if="!isBootstrap"
+              v-model="currentToken"
+              type="password"
+              autocomplete="current-password"
+              :placeholder="t('setup.currentToken')"
+              autofocus
+          />
+          <Input
               v-model="token"
               type="password"
               autocomplete="new-password"
               :placeholder="t('setup.token')"
               :aria-invalid="tooShort"
-              autofocus
+              :autofocus="isBootstrap"
           />
           <Input
               v-model="confirmToken"

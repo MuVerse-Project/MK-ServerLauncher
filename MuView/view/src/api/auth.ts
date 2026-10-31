@@ -29,12 +29,18 @@ export const fetchBootstrapToken = () =>
     MuHttpClient.getRaw<{ token?: string }>('/api/v1/auth/bootstrap')
 
 /**
- * 设置新的访问令牌(需已登录)。成功后旧会话全部失效,需要重新登录。
+ * 设置新的访问令牌(需已登录)。成功后旧令牌立即失效。
+ *
+ * 首次部署(bootstrap)时不需要旧令牌;已经设置过的情况下,
+ * 必须同时提交当前令牌供服务端校验,避免任何人碰到已登录的页面就能改掉令牌。
  *
  * @since VoidLand V0 | DEV.1
  */
-export const updateAccessToken = (token: string) =>
-    MuHttpClient.postRaw<{ ok?: boolean; relogin?: boolean }>('/api/v1/auth/token', {token})
+export const updateAccessToken = (token: string, currentToken?: string) =>
+    MuHttpClient.postRaw<{ ok?: boolean; relogin?: boolean }>('/api/v1/auth/token', {
+        token,
+        currentToken: currentToken ?? "",
+    })
 
 /**
  * 查询当前会话状态。

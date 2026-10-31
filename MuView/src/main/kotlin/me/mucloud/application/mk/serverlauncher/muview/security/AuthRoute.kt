@@ -114,6 +114,15 @@ fun Application.initAuthRoute() {
                     return@post
                 }
                 val body = runCatching { call.receive<Map<String, String>>() }.getOrNull()
+                // 已经设置过令牌的情况:必须再交一次当前令牌,避免"谁碰到已登录的页面就能改掉令牌"
+                if (!MuViewAuth.isBootstrap && !MuViewAuth.verify(body?.get("currentToken")?.trim())) {
+                    LoginThrottle.recordFailure(LoginThrottle.clientKey(call))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        MuMsgErrPacket("Current access token is incorrect."),
+                    )
+                    return@post
+                }
                 val error = MuViewAuth.setAccessToken(body?.get("token") ?: "")
                 if (error != null) {
                     call.respond(HttpStatusCode.BadRequest, MuMsgErrPacket(error))
