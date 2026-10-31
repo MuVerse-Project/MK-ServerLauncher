@@ -43,6 +43,10 @@ export async function refreshSession(force: boolean = false): Promise<MuSessionS
     muSession.authEnabled = data?.authEnabled ?? false
     muSession.authenticated = data?.authenticated ?? false
     muSession.bootstrap = data?.bootstrap ?? false
+    // 带着令牌去问,服务端说没登录 → 说明这枚令牌已失效(改过令牌),顺手清掉
+    if (!muSession.authenticated && hasAccessToken()) {
+      clearAccessToken()
+    }
   } catch {
     // 接口不可用时不阻塞页面,按"未登录"处理
     muSession.authEnabled = true
