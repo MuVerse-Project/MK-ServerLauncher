@@ -136,6 +136,31 @@ fun Application.initAuthRoute() {
  * @author Mu_Mu
  */
 private fun isLoopbackCall(call: ApplicationCall): Boolean {
-    val host = call.request.local.remoteHost
-    return host == "127.0.0.1" || host == "::1" || host.equals("localhost", ignoreCase = true)
+    val raw = call.request.local.remoteHost
+    if (isLoopbackHost(raw)) return true
+    // 兜底:部分 JDK / 平台会把 127.0.0.1 报成 IPv6 映射形式,按地址再判一次
+    val byAddress = runCatching {
+        java.net.InetAddress.getByName(raw.trim().removePrefix("/")).isLoopbackAddress
+    }.getOrDefault(false)
+    if (!byAddress) {
+        org.slf4j.LoggerFactory.getLogger("MuViewAuth")
+            .warn("[MuView] 拒绝远程读取临时令牌,来源地址 = $raw")
+    }
+    return byAddress
+}
+
+/**
+ * 判断来源地址是不是本机。
+ *
+ * 兼容这些写法:`127.0.0.1`、`127.0.0.2`、`::1`、`0:0:0:0:0:0:0:1`、
+ * `::ffff:127.0.0.1`、`[::1]`、`localhost`,以及带前导 `/` 的形式。
+ *
+ * @since VoidLand V0 | DEV.1
+ */
+private fun isLoopbackHost(raw: String): Boolean {
+    val host = raw.trim().removePrefix("/").removeSurrounding("[", "]").lowercase()
+    if (host.isEmpty()) return false
+    if (host == "localhost" || host == "::1" || host == "0:0:0:0:0:0:0:1") return true
+    if (host.startsWith("127.") || host.startsWith("::ffff:127.")) return true
+    return false
 }
