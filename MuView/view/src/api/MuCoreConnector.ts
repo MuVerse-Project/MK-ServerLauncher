@@ -11,11 +11,12 @@ const resolveWebSocketUrl = (api: string) => {
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws"
     const path = api.startsWith("/") ? api : `/${api}`
-    // 浏览器 WebSocket 不能自定义请求头,令牌只能走查询参数
+    // 与页面同源,不写死主机与端口;浏览器 WebSocket 不能自定义请求头,令牌只能走查询参数
     const token = getAccessToken()
-    const query = token ? `${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}` : path
-    // 与页面同源:部署在反代/自定义端口/局域网 IP 下都能直接用,不写死主机与端口
-    return `${protocol}://${window.location.host}${query}`
+    const url = token
+        ? `${path}${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`
+        : path
+    return `${protocol}://${window.location.host}${url}`
 }
 
 interface MuPacketAxiosConfig extends AxiosRequestConfig{
