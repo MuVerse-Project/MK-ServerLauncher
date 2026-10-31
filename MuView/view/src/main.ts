@@ -60,6 +60,7 @@ export const i18n = createI18n({
             inDark: "明亮模式",
             inLight: "暗黑模式"
           },
+          logout: "退出登录",
         },
         home: "主页面",
         env: "环境管理",
@@ -156,6 +157,7 @@ export const i18n = createI18n({
             inDark: "Light Mode",
             inLight: "Dark Mode"
           },
+          logout: "Sign out",
         },
         home: "Home",
         env: "Environment"

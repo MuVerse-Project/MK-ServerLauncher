@@ -7,17 +7,31 @@ import {
   SidebarHeader, SidebarInset,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger
 } from "@shadcn/sidebar"
-import {GalleryVerticalEnd, SquareUserRound, Moon, Sun, Languages} from "@lucide/vue"
+import {GalleryVerticalEnd, SquareUserRound, Moon, Sun, Languages, LogOut} from "@lucide/vue"
 import {AppInfo, useLocale, useSidebarMenus} from "@/main.ts"
 import {OverlayScrollbarsComponent} from "overlayscrollbars-vue"
 import {useColorMode} from "@vueuse/core";
 import {TooltipProvider, Tooltip, TooltipContent, TooltipTrigger} from "@shadcn/tooltip";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@shadcn/dropdown-menu";
 import {useI18n} from "vue-i18n";
+import {useRouter} from "vue-router"
+import {logout} from "@muapi/session.ts"
 
 const mode = useColorMode()
 const { menus } = useSidebarMenus()
 const { t } = useI18n()
+const router = useRouter()
+
+/**
+ * 退出登录:清掉本地令牌并回到登录页。
+ *
+ * 令牌只在前端手里,服务端的 logout 只是清会话 Cookie(现在已不再签发),
+ * 所以真正让"退出"生效的是这里清 token + 跳转。
+ */
+async function handleLogout() {
+  await logout()
+  await router.replace({path: "/login"})
+}
 </script>
 
 <template>
@@ -106,15 +120,29 @@ const { t } = useI18n()
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter> <!-- MuUser Component -->
-        <SidebarMenuButton size="lg">
-          <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <SquareUserRound class="size-4" />
-          </div>
-          <div class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-semibold">{{ AppInfo.dev.devName }}</span>
-            <span class="truncate text-xs">{{ AppInfo.dev.email }}</span>
-          </div>
-        </SidebarMenuButton>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <SidebarMenuButton size="lg">
+                  <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    <SquareUserRound class="size-4" />
+                  </div>
+                  <div class="grid flex-1 text-left text-sm leading-tight">
+                    <span class="truncate font-semibold">{{ AppInfo.dev.devName }}</span>
+                    <span class="truncate text-xs">{{ AppInfo.dev.email }}</span>
+                  </div>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" class="w-56">
+                <DropdownMenuItem @click="handleLogout">
+                  <LogOut class="size-4" />
+                  <span>{{ t("sidebar.internal.logout") }}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail/>
     </Sidebar>
