@@ -53,7 +53,7 @@ object MuViewAuth {
     const val SESSION_MAX_AGE_SECONDS: Int = 12 * 60 * 60
 
     /** 用户自定义令牌的最小长度。 */
-    const val MIN_TOKEN_LENGTH: Int = 16
+    const val MIN_TOKEN_LENGTH: Int = 10
 
     private val logger = LoggerFactory.getLogger(MuViewAuth::class.java)
 

@@ -26,7 +26,7 @@ const confirmToken = ref("")
 const submitting = ref(false)
 const error = ref("")
 
-const MIN_LENGTH = 16
+const MIN_LENGTH = 10
 
 const mismatch = computed(() => confirmToken.value.length > 0 && token.value !== confirmToken.value)
 const tooShort = computed(() => token.value.length > 0 && token.value.trim().length < MIN_LENGTH)

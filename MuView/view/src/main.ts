@@ -45,7 +45,7 @@ export const i18n = createI18n({
       setup: {
         title: "设置你自己的访问令牌",
         description: "临时令牌只在内存里、重启即失效。设置后旧会话全部失效,需要用新令牌重新登录。",
-        token: "新令牌(至少 16 位)",
+        token: "新令牌(至少 10 位)",
         confirm: "再输一次",
         submit: "保存并重新登录",
         submitting: "保存中...",
@@ -141,7 +141,7 @@ export const i18n = createI18n({
       setup: {
         title: "Set your own access token",
         description: "The temporary token lives in memory only and is regenerated on restart. After setting a new one, all sessions are invalidated and you need to sign in again.",
-        token: "New token (min 16 chars)",
+        token: "New token (min 10 chars)",
         confirm: "Repeat it",
         submit: "Save and sign in again",
         submitting: "Saving...",
