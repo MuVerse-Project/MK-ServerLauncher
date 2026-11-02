@@ -107,7 +107,7 @@ let TotalServerCountAnime = useTransition(
             <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
               {{ $t("muPerformanceCard.performance.title") }}
             </blockquote>
-            <div class="flex flex-col gap-2 sm:flex-row">
+            <div class="flex flex-col gap-3">
               <mu-dashboard :value="CpuUsage" :max="100" as="plain">
                 <template #header>
                   {{ $t("muPerformanceCard.performance.cpu") }}

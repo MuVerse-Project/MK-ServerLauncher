@@ -31,7 +31,7 @@ let borderClass = computed(() => {
       ></div>
     </div>
     <div class="w-0 flex-1 text-sm text-gray-950 dark:text-white">
-      <div class="text-lg font-bold">
+      <div class="whitespace-nowrap text-lg font-bold">
         <slot name="header" :percent="percent" :value="value" :max="max">
           <p>{{ percent }}%</p>
         </slot>
