@@ -75,7 +75,7 @@ let TotalServerCountAnime = useTransition(
 </script>
 
 <template>
-  <card class="w-full min-w-0">
+  <card class="w-full min-w-0 md:w-fit md:max-w-full">
     <card-header>
       <card-title>
         {{ $t("muPerformanceCard.title") }}
@@ -83,12 +83,12 @@ let TotalServerCountAnime = useTransition(
     </card-header>
     <card-content>
       <div class="flex flex-col gap-5">
-        <div class="flex flex-col gap-6 md:flex-row md:gap-20 md:justify-between">
-          <div class="flex h-full flex-col gap-y-5 md:min-w-0 md:flex-1">
+        <div class="flex flex-col gap-6 md:flex-row md:items-start md:gap-12">
+          <div class="flex h-full flex-col gap-y-5 md:w-[22rem] md:flex-none">
             <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
               {{ $t("muPerformanceCard.server.title") }}
             </blockquote>
-            <div class="flex w-full flex-row items-center justify-around gap-4 md:mx-5 md:gap-10">
+            <div class="flex w-full flex-row items-center justify-between gap-4 md:gap-8">
               <div class="flex flex-col text-center text-lg">
                 <span class="mb-3">{{ OnlineServerCountAnime }}</span>
                 <span>{{ $t("muPerformanceCard.server.online") }}</span>
@@ -103,7 +103,7 @@ let TotalServerCountAnime = useTransition(
               </div>
             </div>
           </div>
-          <div class="flex h-full w-full flex-col gap-y-5 md:w-120 md:min-w-0">
+          <div class="flex h-full w-full flex-col gap-y-5 md:w-[22rem] md:flex-none">
             <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
               {{ $t("muPerformanceCard.performance.title") }}
             </blockquote>
