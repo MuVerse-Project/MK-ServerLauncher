@@ -84,7 +84,7 @@ let TotalServerCountAnime = useTransition(
     <card-content>
       <div class="flex flex-col gap-5">
         <div class="flex flex-col gap-6 md:flex-row md:gap-20 md:justify-between">
-          <div class="flex flex-col gap-y-5 h-full">
+          <div class="flex h-full flex-col gap-y-5 md:min-w-0 md:flex-1">
             <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
               {{ $t("muPerformanceCard.server.title") }}
             </blockquote>
