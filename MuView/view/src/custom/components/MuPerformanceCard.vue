@@ -4,7 +4,7 @@ import {useTransition} from "@vueuse/core";
 import {MuWSConnection} from "@/api/MuCoreConnector.ts";
 import {Card, CardContent, CardHeader, CardTitle} from "@shadcn/card";
 import {Skeleton} from "@shadcn/skeleton";
-import MuDashboard from "@mucom/MuDashboard.vue";
+import {Activity, CircleStop, Cpu, MemoryStick, Server, MonitorCog} from "@lucide/vue";
 import {MuStatusPacket} from "@/custom/api/MuStatusPacket.ts";
 
 let tsk = -1
@@ -60,93 +60,150 @@ function processCoreData(msg: any){
   onLoading.value = false
 }
 
-let OnlineServerCountAnime = useTransition(
-    OnlineServerCount,
-    { duration: 1500 }
-)
-let StoppedServerCountAnime = useTransition(
-    StoppedServerCount,
-    { duration: 1500 }
-)
-let TotalServerCountAnime = useTransition(
-    TotalServerCount,
-    { duration: 1500 }
-)
+let OnlineServerCountAnime = useTransition(OnlineServerCount, { duration: 1500 })
+let StoppedServerCountAnime = useTransition(StoppedServerCount, { duration: 1500 })
+let TotalServerCountAnime = useTransition(TotalServerCount, { duration: 1500 })
 </script>
 
 <template>
-  <card>
-    <card-header>
-      <card-title>
-        {{ $t("muPerformanceCard.title") }}
-      </card-title>
-    </card-header>
-    <card-content>
-      <div class="flex flex-col gap-5">
-        <div class="flex md:flex-row flex-col gap-20 justify-between">
-          <div class="flex flex-col gap-y-5 h-full">
-            <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
-              {{ $t("muPerformanceCard.server.title") }}
-            </blockquote>
-            <div class="flex flex-row gap-10 w-full justify-around items-center mx-5">
-              <div class="flex flex-col text-center text-lg">
-                <span class="mb-3">{{ OnlineServerCountAnime }}</span>
-                <span>{{ $t("muPerformanceCard.server.online") }}</span>
-              </div>
-              <div class="flex flex-col text-center text-lg">
-                <span class="mb-3">{{ StoppedServerCountAnime }}</span>
-                <span>{{ $t("muPerformanceCard.server.stopped") }}</span>
-              </div>
-              <div class="flex flex-col text-center text-lg">
-                <span class="mb-3">{{ TotalServerCount }}</span>
-                <span>{{ $t("muPerformanceCard.server.total") }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="flex flex-col gap-y-5 h-full w-120">
-            <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
-              {{ $t("muPerformanceCard.performance.title") }}
-            </blockquote>
-            <div class="flex flex-row gap-2">
-              <mu-dashboard :value="CpuUsage" :max="100" as="plain">
-                <template #header>
-                  {{ $t("muPerformanceCard.performance.cpu") }}
-                </template>
-                <template #footer="{ percent }">
-                  {{ percent }}%
-                </template>
-              </mu-dashboard>
-              <mu-dashboard :value="MemUsage" :max="100" as="plain">
-                <template #header>
-                  {{ $t("muPerformanceCard.performance.mem") }}
-                </template>
-                <template #footer="{ percent }">
-                  {{ percent }}%
-                </template>
-              </mu-dashboard>
-            </div>
-
-          </div>
+  <div class="flex w-full min-w-0 flex-col gap-5">
+    <!-- 顶排指标卡：手机上两列、平板三列、宽屏五列 -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      <!-- 服务器概览 -->
+      <div class="flex items-center gap-3 rounded-xl border bg-card p-4">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-fuchsia-600/10 text-fuchsia-600">
+          <Server class="size-5" />
         </div>
-        <div class="flex flex-col gap-y-5 h-full overflow-hidden">
-          <blockquote class="mt-6 border-l-2 border-black dark:border-white pl-3 font-bold">
-            {{ $t("muPerformanceCard.appInfo.title") }}
-          </blockquote>
-          <div class="flex flex-col w-full">
-            <div class="flex flex-row items-center">
-              <span class="font-bold">{{ $t("muPerformanceCard.appInfo.coreLabel") }}:</span>
-              <skeleton v-if="onLoading" class="ml-2 h-5 w-20" />
-              <span v-else class="ml-2">{{ MuCoreName }}</span>
-            </div>
-            <div class="flex flex-row items-center">
-              <span class="font-bold">{{ $t("muPerformanceCard.appInfo.versionLabel") }}:</span>
-              <skeleton v-if="onLoading" class="ml-2 h-5 w-20" />
-              <span v-else class="ml-2">{{ MuCoreVer }}</span>
-            </div>
-          </div>
+        <div class="flex min-w-0 flex-col">
+          <span class="text-xs text-muted-foreground">{{ $t("muPerformanceCard.server.total") }}</span>
+          <span class="truncate text-lg font-semibold">
+            <skeleton v-if="onLoading" class="inline-block h-5 w-8 align-middle" />
+            <template v-else>{{ TotalServerCountAnime }}</template>
+          </span>
         </div>
       </div>
-    </card-content>
-  </card>
-</template>
 
+      <!-- 正在运行 -->
+      <div class="flex items-center gap-3 rounded-xl border bg-card p-4">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+          <Activity class="size-5" />
+        </div>
+        <div class="flex min-w-0 flex-col">
+          <span class="text-xs text-muted-foreground">{{ $t("muPerformanceCard.server.online") }}</span>
+          <span class="truncate text-lg font-semibold">
+            <skeleton v-if="onLoading" class="inline-block h-5 w-8 align-middle" />
+            <template v-else>{{ OnlineServerCountAnime }}</template>
+          </span>
+        </div>
+      </div>
+
+      <!-- 已停止 -->
+      <div class="flex items-center gap-3 rounded-xl border bg-card p-4">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <CircleStop class="size-5" />
+        </div>
+        <div class="flex min-w-0 flex-col">
+          <span class="text-xs text-muted-foreground">{{ $t("muPerformanceCard.server.stopped") }}</span>
+          <span class="truncate text-lg font-semibold">
+            <skeleton v-if="onLoading" class="inline-block h-5 w-8 align-middle" />
+            <template v-else>{{ StoppedServerCountAnime }}</template>
+          </span>
+        </div>
+      </div>
+
+      <!-- CPU -->
+      <div class="flex items-center gap-3 rounded-xl border bg-card p-4">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-fuchsia-600/10 text-fuchsia-600">
+          <Cpu class="size-5" />
+        </div>
+        <div class="flex min-w-0 flex-col">
+          <span class="text-xs text-muted-foreground">{{ $t("muPerformanceCard.performance.cpu") }}</span>
+          <span class="whitespace-nowrap text-lg font-semibold">
+            <skeleton v-if="onLoading" class="inline-block h-5 w-12 align-middle" />
+            <template v-else>{{ CpuUsage.toFixed(2) }}%</template>
+          </span>
+        </div>
+      </div>
+
+      <!-- 内存 -->
+      <div class="flex items-center gap-3 rounded-xl border bg-card p-4">
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-sky-500/10 text-sky-600">
+          <MemoryStick class="size-5" />
+        </div>
+        <div class="flex min-w-0 flex-col">
+          <span class="text-xs text-muted-foreground">{{ $t("muPerformanceCard.performance.mem") }}</span>
+          <span class="whitespace-nowrap text-lg font-semibold">
+            <skeleton v-if="onLoading" class="inline-block h-5 w-12 align-middle" />
+            <template v-else>{{ MemUsage.toFixed(2) }}%</template>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下方两块：宽屏并排，窄屏堆叠 -->
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+      <!-- 服务器状态 -->
+      <card class="min-w-0">
+        <card-header>
+          <card-title class="flex items-center gap-2 text-base">
+            <Server class="size-4 text-muted-foreground" />
+            {{ $t("muPerformanceCard.server.title") }}
+          </card-title>
+        </card-header>
+        <card-content>
+          <div class="flex flex-col divide-y">
+            <div class="flex items-center justify-between py-3 first:pt-0">
+              <span class="text-sm">{{ $t("muPerformanceCard.server.online") }}</span>
+              <span class="whitespace-nowrap text-sm font-semibold">
+                <skeleton v-if="onLoading" class="inline-block h-4 w-8 align-middle" />
+                <template v-else>{{ OnlineServerCount }}</template>
+              </span>
+            </div>
+            <div class="flex items-center justify-between py-3">
+              <span class="text-sm">{{ $t("muPerformanceCard.server.stopped") }}</span>
+              <span class="whitespace-nowrap text-sm font-semibold">
+                <skeleton v-if="onLoading" class="inline-block h-4 w-8 align-middle" />
+                <template v-else>{{ StoppedServerCount }}</template>
+              </span>
+            </div>
+            <div class="flex items-center justify-between py-3 last:pb-0">
+              <span class="text-sm">{{ $t("muPerformanceCard.server.total") }}</span>
+              <span class="whitespace-nowrap text-sm font-semibold">
+                <skeleton v-if="onLoading" class="inline-block h-4 w-8 align-middle" />
+                <template v-else>{{ TotalServerCount }}</template>
+              </span>
+            </div>
+          </div>
+        </card-content>
+      </card>
+
+      <!-- 应用信息 -->
+      <card class="min-w-0">
+        <card-header>
+          <card-title class="flex items-center gap-2 text-base">
+            <MonitorCog class="size-4 text-muted-foreground" />
+            {{ $t("muPerformanceCard.appInfo.title") }}
+          </card-title>
+        </card-header>
+        <card-content>
+          <div class="flex flex-col divide-y">
+            <div class="flex items-center justify-between gap-4 py-3 first:pt-0">
+              <span class="shrink-0 text-sm">{{ $t("muPerformanceCard.appInfo.coreLabel") }}</span>
+              <span class="truncate text-sm font-semibold">
+                <skeleton v-if="onLoading" class="inline-block h-4 w-24 align-middle" />
+                <template v-else>{{ MuCoreName }}</template>
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-4 py-3 last:pb-0">
+              <span class="shrink-0 text-sm">{{ $t("muPerformanceCard.appInfo.versionLabel") }}</span>
+              <span class="truncate text-sm font-semibold">
+                <skeleton v-if="onLoading" class="inline-block h-4 w-24 align-middle" />
+                <template v-else>{{ MuCoreVer }}</template>
+              </span>
+            </div>
+          </div>
+        </card-content>
+      </card>
+    </div>
+  </div>
+</template>

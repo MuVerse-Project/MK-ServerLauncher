@@ -155,7 +155,7 @@ async function handleLogout() {
       <OverlayScrollbarsComponent defer
                                   :options="{ scrollbars: { autoHide: 'scroll' }, theme: (): string => { if(mode == 'light'){ return 'os-theme-light'} else { return 'os-theme-dark' } } }"
       >
-        <div class="flex flex-wrap max-h-dvh gap-5 px-5">
+        <div class="flex w-full min-w-0 flex-wrap max-h-dvh gap-5 px-5">
           <slot/>
         </div>
       </OverlayScrollbarsComponent>
