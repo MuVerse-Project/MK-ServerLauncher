@@ -59,9 +59,22 @@ export async function refreshSession(force: boolean = false): Promise<MuSessionS
 /**
  * 用访问令牌登录。
  *
+ * 失败时把「为什么失败」一起带回去：令牌不对是 401，撞上失败限流是 429，
+ * 登录页要能分清这两种，不能一律显示"令牌不正确"。
+ *
  * @since VoidLand V0 | DEV.1
  */
-export async function login(token: string): Promise<boolean> {
+export interface MuLoginResult {
+  ok: boolean
+  /** 失败时的 HTTP 状态码 */
+  status?: number
+  /** 失败时服务端给的原文(MP_DATA.msg) */
+  message?: string
+  /** 429 时建议等待的秒数(来自 Retry-After) */
+  retryAfter?: number
+}
+
+export async function login(token: string): Promise<MuLoginResult> {
   try {
     const data = await loginWithToken(token)
     // 令牌只放在内存里:刷新即失效,下次进入要重新输入
@@ -70,11 +83,20 @@ export async function login(token: string): Promise<boolean> {
     muSession.resolved = false
     // 登录后重新探测一次,拿到最新的 bootstrap 状态(决定要不要强制设置新令牌)
     await refreshSession(true)
-    return muSession.authenticated
-  } catch {
+    return {ok: muSession.authenticated}
+  } catch (err) {
     clearAccessToken()
     muSession.authenticated = false
-    return false
+    const resp = (err as { response?: { status?: number; data?: unknown; headers?: Record<string, unknown> } })?.response
+    const payload = resp?.data as { MP_DATA?: { msg?: string }; msg?: string } | string | undefined
+    const message = typeof payload === "string" ? payload : payload?.MP_DATA?.msg ?? payload?.msg
+    const seconds = Number(resp?.headers?.["retry-after"])
+    return {
+      ok: false,
+      status: resp?.status,
+      message,
+      retryAfter: Number.isFinite(seconds) ? seconds : undefined,
+    }
   }
 }
 

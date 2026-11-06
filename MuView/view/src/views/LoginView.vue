@@ -31,6 +31,8 @@ const mode = useColorMode()
 const token = ref("")
 const submitting = ref(false)
 const failed = ref(false)
+/** 失败文案:401 与 429 要分开说,不能都写成"令牌不正确" */
+const failText = ref("")
 
 /** 首次部署的一次性临时令牌(只在 bootstrap 阶段有值)。 */
 const bootstrapToken = ref("")
@@ -58,13 +60,18 @@ async function submit() {
   if (!token.value.trim() || submitting.value) return
   submitting.value = true
   failed.value = false
-  const ok = await login(token.value.trim())
+  failText.value = ""
+  const result = await login(token.value.trim())
   submitting.value = false
-  if (ok) {
+  if (result.ok) {
     // 首次初始化时守卫会把我们送去 /setup-token
     await router.replace(muSession.bootstrap ? "/setup-token" : "/")
   } else {
     failed.value = true
+    // 429 是被失败限流挡下的,不是令牌错;能拿到 Retry-After 就把秒数说清楚
+    failText.value = result.status === 429
+        ? t("login.tooMany", {seconds: result.retryAfter ?? 60})
+        : t("login.failed")
   }
 }
 
@@ -136,7 +143,7 @@ onMounted(async () => {
               :aria-invalid="failed"
               autofocus
           />
-          <p v-if="failed" class="text-sm text-destructive">{{ t("login.failed") }}</p>
+          <p v-if="failed" class="text-sm text-destructive">{{ failText }}</p>
           <Button type="submit" class="w-full" :disabled="submitting || !token.trim()">
             {{ submitting ? t("login.submitting") : t("login.submit") }}
           </Button>
