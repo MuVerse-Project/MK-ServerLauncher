@@ -59,7 +59,12 @@ class MuConfiguration {
 
     init {
         if (!MuAppDir.isWritableDir(MuAppDir.root)) {
-            warn("应用目录不可写：${MuAppDir.root}；写回设置会失败，请换到可写目录，或用 -D${MuAppDir.PROPERTY} 指定")
+            // 直接停在这里：配置写不进去，后面每一次写回都会失败。
+            // 与其让它在运行到改令牌那一步才炸，不如启动时把话说清楚。
+            throw IllegalStateException(
+                "应用目录不可写：${MuAppDir.root}。请把程序放到有写权限的目录，" +
+                    "或用 -D${MuAppDir.PROPERTY}=<路径> 指定配置位置"
+            )
         }
     }
 
