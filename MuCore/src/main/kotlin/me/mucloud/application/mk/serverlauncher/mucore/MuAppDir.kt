@@ -14,8 +14,8 @@ import java.nio.file.Paths
  * 解析顺序：
  * 1. 系统属性 `-Dmksl.home=<路径>`（测试与特殊部署用）
  * 2. 环境变量 `MKSL_HOME`
- * 3. 跟随代码来源：发行态取 fat jar 的父目录；开发态沿目录向上找到含 `settings.gradle.kts` 的仓库根
- * 4. 兜底当前工作目录（并告警）
+ * 3. 发行态：取 fat jar 的父目录（装在哪就跟着哪）
+ * 4. 开发态：跟随当前工作目录——IDE 里就是「工作目录」那一栏，`gradlew run` 默认是项目根
  *
  * @since VoidLand V0 | DEV.2
  * @author Mu_Mu
@@ -24,8 +24,6 @@ object MuAppDir {
 
     const val PROPERTY: String = "mksl.home"
     const val ENV: String = "MKSL_HOME"
-
-    private const val MAX_ASCEND = 8
 
     /** 应用根目录，只解析一次。 */
     val root: Path by lazy { resolve() }
@@ -42,31 +40,13 @@ object MuAppDir {
         val location = MuAppDir::class.java.protectionDomain?.codeSource?.location
         val codePath = location?.let { runCatching { Paths.get(it.toURI()) }.getOrNull() }
 
-        if (codePath != null) {
-            // 发行态：codeSource 指向 xxx-all.jar，取它的父目录
-            if (Files.isRegularFile(codePath)) {
-                return codePath.parent ?: codePath
-            }
-            // 开发态：codeSource 指向 build/classes/kotlin/main，向上找仓库根
-            findProjectRoot(codePath)?.let { return it }
+        // 发行态：codeSource 指向 fat jar，配置跟随 jar 的位置
+        if (codePath != null && Files.isRegularFile(codePath)) {
+            return codePath.parent ?: codePath
         }
 
-        System.err.println("[MuAppDir] 无法从代码位置推断应用目录，退回工作目录：${Paths.get("").toAbsolutePath()}")
-        return Paths.get("").toAbsolutePath()
-    }
-
-    private fun findProjectRoot(start: Path): Path? {
-        var cursor: Path? = start
-        repeat(MAX_ASCEND) {
-            val current = cursor ?: return null
-            if (Files.exists(current.resolve("settings.gradle.kts")) ||
-                Files.exists(current.resolve("settings.gradle"))
-            ) {
-                return current
-            }
-            cursor = current.parent
-        }
-        return null
+        // 开发态：跟随当前工作目录，不再向上翻仓库根——否则 IDE 里指定的工作目录会被悄悄吃掉
+        return Paths.get("").toAbsolutePath().normalize()
     }
 
     /**
