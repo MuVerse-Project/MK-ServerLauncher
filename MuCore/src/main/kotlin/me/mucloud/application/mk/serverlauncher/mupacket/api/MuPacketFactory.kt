@@ -47,7 +47,7 @@ object MuPacketFactory {
      * @since RainyZone V1 | DEV.1
      */
     fun toPacket(raw: JsonObject): MuPacket {
-        // 先把请求号抠出来：解析失败时也要把它带回错误包（T14 ③）
+        // 先把请求号抠出来：解析失败时也要把它带回错误包，前端才能把错误对回某次调用
         var requestCid: Long? = null
         try{
             require(raw.has("MP_ID") && raw.has("MP_DATA") && raw.has("CID")) { "Invalid MuPacket Raw >> Corrupted Raw" }
