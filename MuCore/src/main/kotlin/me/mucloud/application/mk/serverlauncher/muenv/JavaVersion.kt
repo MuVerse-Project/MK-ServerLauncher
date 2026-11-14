@@ -6,7 +6,7 @@ package me.mucloud.application.mk.serverlauncher.muenv
  * - Used for marking Java Development Edition Version and class Version.
  * - Used to determine whether this JDK version can be used in a specific Minecraft Dedicated Server.
  *
- * @since TinyNova V1 | DEV.1
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Cloud
  */
 enum class JavaVersion(

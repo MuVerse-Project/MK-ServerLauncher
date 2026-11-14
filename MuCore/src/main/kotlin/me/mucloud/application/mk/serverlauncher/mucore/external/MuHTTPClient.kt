@@ -51,7 +51,7 @@ object MuHTTPClient {
     /**
      * File Downloader
      *
-     * @since TinyNova V0
+     * @since VoidLand V0 | DEV.1
      */
     fun downloadFile(url: String, file: File) {
         val request = Request.Builder().url(url).build()

@@ -11,7 +11,7 @@ import kotlin.io.path.isDirectory
  *
  * ## Java Environment
  *
- * @since DEV.1
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Cloud
  * @param name JavaEnvironment Name
  * @param path Java Installation Folder (like %JAVA_HOME% Folder)

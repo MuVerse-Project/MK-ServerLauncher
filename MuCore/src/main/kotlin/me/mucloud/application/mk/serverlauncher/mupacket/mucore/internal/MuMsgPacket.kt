@@ -3,10 +3,11 @@ package me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2View
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 import kotlin.random.Random
 
-object MuMsgPacketInfo: MuPacketInfo<MuMsgPacket> {
+object MuMsgPacketInfo: MuPacketInfo<MuMsgPacket>, MuPacket2View {
     override val pid: String = "mucore.internal:msg"
     override fun fromData(data: JsonObject, cid: Long): MuMsgPacket = throw UnsupportedOperationException("Do not send MuMsgPacket to MuCore!")
 }
@@ -15,18 +16,18 @@ open class MuMsgPacket(
     val status: MuMsgStatus,
     val msg: String,
     cid: Long = Random.nextCallId(),
-): AbstractMuPacket(MuMsgPacketInfo, cid){
+): AbstractMuPacket(MuMsgPacketInfo, cid), MuPacket2View {
     override fun getData(): JsonObject = JsonObject().apply{
-        addProperty("status", status.name)
+        addProperty("type", status.name)
         addProperty("msg", msg)
     }
 }
 
-class MuMsgInfoPacket(msg: String): MuMsgPacket(MuMsgStatus.INFO, msg)
-class MuMsgWarnPacket(msg: String): MuMsgPacket(MuMsgStatus.WARN, msg)
-class MuMsgErrPacket(msg: String): MuMsgPacket(MuMsgStatus.ERR, msg)
-class MuMsgOKPacket(msg: String): MuMsgPacket(MuMsgStatus.OK, msg)
-class MuMsgTipPacket(msg: String): MuMsgPacket(MuMsgStatus.TIP, msg)
+class MuMsgInfoPacket(msg: String, cid: Long = Random.nextCallId()): MuMsgPacket(MuMsgStatus.INFO, msg, cid)
+class MuMsgWarnPacket(msg: String, cid: Long = Random.nextCallId()): MuMsgPacket(MuMsgStatus.WARN, msg, cid)
+class MuMsgErrPacket(msg: String, cid: Long = Random.nextCallId()): MuMsgPacket(MuMsgStatus.ERR, msg, cid)
+class MuMsgOKPacket(msg: String, cid: Long = Random.nextCallId()): MuMsgPacket(MuMsgStatus.OK, msg, cid)
+class MuMsgTipPacket(msg: String, cid: Long = Random.nextCallId()): MuMsgPacket(MuMsgStatus.TIP, msg, cid)
 
 enum class MuMsgStatus {
     INFO, OK, WARN, ERR, TIP

@@ -14,7 +14,7 @@ import kotlin.random.Random
  *
  * It should be extended which you want to create MuPacket's SubClass.
  *
- * @since TinyNova V1 | DEV.2
+ * @since RainyZone V0 | DEV.3
  * @author Mu_Cloud
  */
 abstract class AbstractMuPacket(

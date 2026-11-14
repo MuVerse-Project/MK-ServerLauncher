@@ -10,7 +10,7 @@ import java.util.regex.Pattern
  * - [Compatibility Information Source](https://minecraft.wiki/w/Tutorial:Setting_up_a_Java_Edition_server#Version_requirements)
  * - **Unstable, might be changed at any time. Not recommended for use or as a reference.**
  *
- * @since TinyNova V1 | DEV.1
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Cloud
  */
 enum class MCEnvCompMode(

@@ -3,6 +3,7 @@ package me.mucloud.application.mk.serverlauncher.mupacket.muview
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.muenv.MuEnvironmentService
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2Core
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
@@ -12,11 +13,11 @@ class CreateMuEnvPacket(
     val evName: String,
     val evPath: String,
     cid: Long = Random.nextCallId()
-): AbstractMuPacket(createMuEnvPacketInfo, cid = cid), ExecutableMuPacket {
+): AbstractMuPacket(createMuEnvPacketInfo, cid = cid), ExecutableMuPacket, MuPacket2Core {
     override fun getData(): JsonObject = JsonObject().apply {
         addProperty("name", evName)
         addProperty("path", evPath)
     }
 
-    override fun execute(): MuPacket = MuEnvironmentService.regMuEnvironment(evName, evPath)
+    override fun execute(): MuPacket = MuEnvironmentService.regMuEnvironment(evName, evPath, getCallId())
 }

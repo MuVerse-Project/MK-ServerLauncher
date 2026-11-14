@@ -1,9 +1,10 @@
 package me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver
 
 import com.google.gson.JsonObject
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2View
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 
-val muServerListPacketInfo = object : MuPacketInfo<MuServerListPacket> {
+val muServerListPacketInfo: MuPacketInfo<MuServerListPacket> = object : MuPacketInfo<MuServerListPacket>, MuPacket2View {
     override val pid: String = "mucore.muserver:list"
     override fun fromData(data: JsonObject, cid: Long): MuServerListPacket = throw UnsupportedOperationException("Do not send MuServerListPacket to MuCore!")
 }

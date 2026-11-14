@@ -16,7 +16,7 @@ object MuPacketAdapter: JsonSerializer<MuPacket>, JsonDeserializer<MuPacket> {
      * ***All of MuPacket must be as a [JsonObject]***
      *
      * @author Mu_Cloud
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      * @return A [JsonObject], but type is [JsonElement]
      */
     override fun serialize(
@@ -31,7 +31,7 @@ object MuPacketAdapter: JsonSerializer<MuPacket>, JsonDeserializer<MuPacket> {
      * ***If you want to read MuPacket as JsonObject to MuPacket, its MuPacketInfo must be registered by [MuPacketFactory.regMuPacket]***
      *
      * @author Mu_Cloud
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      * @return A [MuPacket] from provided JSON Object
      */
     override fun deserialize(

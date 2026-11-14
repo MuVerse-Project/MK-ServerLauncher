@@ -24,7 +24,18 @@ export interface MuPacketData<T extends object = object> {
     CID: number;
 }
 
+export type MuPacketDirection = "2view" | "2core" | "both";
+
 export abstract class MuPacket<T extends object = object> {
+    /**
+     * 方向运行期标记。
+     *
+     * TypeScript 的接口在运行期会被擦除，所以这里用静态字段承载 Kotlin 侧
+     * `MuPacket2View` / `MuPacket2Core` 的语义：默认 `2view`（MuCore 发往 MuView），
+     * MuView 发出的包标 `2core`，双向的标 `both`。
+     */
+    static readonly DIRECTION: MuPacketDirection = "2view";
+
     readonly MP_ID: string;
     readonly MP_DATA: T;
     readonly CID: number;
@@ -46,6 +57,25 @@ export abstract class MuPacket<T extends object = object> {
 
 export interface ExecutableMuPacket {
     execute(): void | Promise<void>;
+}
+
+/**
+ * 解析失败 / 未注册的 MP_ID 用的错误包。
+ *
+ * 与 Kotlin 侧的 `mucore.internal:msg(ERR)` 对齐：宁可显式报错，
+ * 也不要用匿名基类把故障伪装成「解析成功、字段全空」。
+ */
+export class MuPacketError extends MuPacket {
+    readonly reason: string;
+
+    constructor(data: MuPacketData, reason: string) {
+        super(data);
+        this.reason = reason;
+    }
+
+    get message(): string {
+        return `MuPacketError: ${this.reason} (MP_ID=${this.MP_ID})`;
+    }
 }
 
 export abstract class ExecutableMuPacketBase<T extends object = object>

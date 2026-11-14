@@ -1,4 +1,4 @@
-import {type ExecutableMuPacket, MuPacket, type MuPacketData} from "@muapi/mupacket/MuPacket.ts";
+import {type ExecutableMuPacket, MuPacket, MuPacketError, type MuPacketData} from "@muapi/mupacket/MuPacket.ts";
 
 type MuPacketConstructor<T extends MuPacket = MuPacket> = new (data: MuPacketData) => T;
 
@@ -17,9 +17,15 @@ export class MuPacketRegistry {
         const ctor = this.registry.get(data.MP_ID);
 
         if (!ctor) {
-            console.warn(`未注册的 MP_ID: ${data.MP_ID}，回退到基础 MuPacket`);
-            // 动态创建一个匿名基础类
-            return new (class extends MuPacket {})(data);
+            const reason = `未注册的 MP_ID: ${data.MP_ID}`;
+            console.warn(`${reason}，返回 MuPacketError`);
+            return new MuPacketError(data, reason);
+        }
+
+        // 方向自检：接口会被擦除，只能读静态字段。收到 2core 的包说明对面发错了方向。
+        const direction = (ctor as unknown as { DIRECTION?: string }).DIRECTION;
+        if (direction === "2core") {
+            console.warn(`收到方向为 2core 的包：${data.MP_ID}，MuView 不该接收它`);
         }
 
         return new ctor(data);
@@ -35,7 +41,10 @@ export class MuPacketRegistry {
         return Array.from(this.registry.keys());
     }
 
+    private static cidSeq = 0;
+
+    /** 进程内单调自增，与 Kotlin 侧对齐；不追求跨实例唯一。 */
     static generateCID(): number {
-        return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+        return ++this.cidSeq;
     }
 }
