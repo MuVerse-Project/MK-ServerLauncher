@@ -10,7 +10,7 @@ import com.google.gson.JsonObject
  *
  * @suppress Unstable API, and may be changed in the future. Do not implement directly! Please extend [AbstractMuPacket]
  * @see AbstractMuPacket
- * @since RainyZone V1 | DEV.1
+ * @since RainyZone V0 | DEV.1
  * @author Mu_Cloud
  */
 interface MuPacket {
@@ -22,7 +22,7 @@ interface MuPacket {
      *
      * @return The MuPacket ID
      * @see toJson
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     fun getInfo(): MuPacketInfo<*>
 
@@ -33,7 +33,7 @@ interface MuPacket {
      *
      * @return The Serialized MuPacket Custom Data as [JsonObject]
      * @see toJson
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     fun getData(): JsonElement
 
@@ -48,7 +48,7 @@ interface MuPacket {
      *
      * @return The Serialized MuPacket as [JsonObject]
      * @see getData
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     fun toJson(): JsonObject
 
@@ -56,7 +56,7 @@ interface MuPacket {
      * ### MuPacket Call ID
      *
      * @return The Call ID of MuPacket
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     fun getCallId(): Long
 

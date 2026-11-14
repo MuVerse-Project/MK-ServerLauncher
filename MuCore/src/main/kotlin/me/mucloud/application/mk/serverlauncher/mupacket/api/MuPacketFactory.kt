@@ -14,7 +14,7 @@ import kotlin.random.Random
  *
  * MuPacket Register & MuPacket Deserializer
  *
- * @since RainyZone V1 | DEV.1
+ * @since RainyZone V0 | DEV.1
  * @author Mu_Cloud
  */
 object MuPacketFactory {
@@ -28,7 +28,7 @@ object MuPacketFactory {
      * @author Mu_Cloud
      * @param type Implement of MuPacket Info
      * @throws IllegalArgumentException if MP_ID from [type] is not matches [pattern] or it was registered
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     fun <T : MuPacket> regMuPacket(type: MuPacketInfo<T>) {
         val pid = type.pid
@@ -44,7 +44,7 @@ object MuPacketFactory {
      * @return A [MuPacket] from the JSON Message supplied.
      * @suppress Attention! It also calls the MuPacket Listeners if MP_ID is registered in [MPListeners]
      * @throws IllegalStateException if MuPacket Raw is corrupted or MP_ID is not registered
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     fun toPacket(raw: JsonObject): MuPacket {
         // 先把请求号抠出来：解析失败时也要把它带回错误包，前端才能把错误对回某次调用
@@ -82,7 +82,7 @@ object MuPacketFactory {
      * @param type Implement of MuPacket Info
      * @param listener A Lambda function that will be executed in a [toPacket] call with the same [type].
      * @throws IllegalArgumentException if MP_ID from [type] is not registered
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     @Suppress("UNCHECKED_CAST")
     fun <T: MuPacket> regMuPacketListener(type: MuPacketInfo<T>, listener: T.() -> Unit) {
@@ -98,7 +98,7 @@ object MuPacketFactory {
      * @author Mu_Cloud
      * @param type Implement of MuPacket Info
      * @param mp A [MuPacket] for serving its contents.
-     * @since RainyZone V1 | DEV.1
+     * @since RainyZone V0 | DEV.1
      */
     private fun callListeners(type: MuPacketInfo<*>, mp: MuPacket) = MPListeners[type]?.forEach { it(mp) }
 
@@ -114,7 +114,7 @@ object MuPacketFactory {
      *
      * @author Mu_Cloud
      * @return A Long Number, which represents the Call ID of a MuPacket
-     * @since RainyZone V1 | DEV.2
+     * @since RainyZone V0 | DEV.2
      */
     fun Random.nextCallId(): Long = CALL_SEQ.incrementAndGet()
 }

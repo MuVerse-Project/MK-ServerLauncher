@@ -11,7 +11,7 @@ import com.google.gson.JsonObject
  *
  * It should be Defined if you want to register the SubClasses of MuPacket
  *
- * @since RainyZone V1 | DEV.5
+ * @since RainyZone V0 | DEV.5
  * @author Mu_Cloud
  */
 interface MuPacketInfo<out T: MuPacket> {
@@ -27,7 +27,7 @@ interface MuPacketInfo<out T: MuPacket> {
      * The Base of MuPacket Data (MP_DATA) Deserializer
      *
      * @param data The MP_DATA Content as [JsonObject] in the MuPacket
-     * @since RainyZone V1 | DEV.5
+     * @since RainyZone V0 | DEV.5
      */
     fun fromData(data: JsonObject, cid: Long): T
 }
