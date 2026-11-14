@@ -115,9 +115,10 @@ object EnvPool {
         if(!name.matches(Regex("^[A-Za-z].*"))) return MuStateResult(false, "Invalid MuEnvironment Name: Invalid Format")
         if(path.isEmpty() || path.isBlank()) return MuStateResult(false, "Invalid MuEnvironment Path: WhiteSpace or Empty are not allowed")
 
-        val rawPath = Path.of(path)
-        if(!rawPath.exists()) return MuStateResult(false, "Invalid MuEnvironment Path: Path Not Found: $path")
-        if (!rawPath.isDirectory()) return MuStateResult(false, "Invalid MuEnvironment Path: Path Not a Directory: $path")
+        val rawPath = runCatching { Path.of(path) }
+            .getOrElse { return MuStateResult(false, "Invalid MuEnvironment Path: \"$path\" (${it.message ?: "unparsable"})") }
+        if (!rawPath.exists()) return MuStateResult(false, "Invalid MuEnvironment Path: not found: \"$path\"")
+        if (!rawPath.isDirectory()) return MuStateResult(false, "Invalid MuEnvironment Path: not a directory: \"$path\"")
 
         jEnvs.forEach {
             if(it.name == name){
