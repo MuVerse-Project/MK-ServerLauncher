@@ -22,6 +22,9 @@ interface CreateMuEnvPacket_MPDataDefinition{
 }
 
 export class CreateMuEnvPacket extends MuPacket<CreateMuEnvPacket_MPDataDefinition>{
+    /** 这是 MuView 发往 MuCore 的包，方向与基类默认值相反。 */
+    static readonly DIRECTION = "2core" as const;
+
     static create(data: CreateMuEnvPacket_MPDataDefinition){
         return new CreateMuEnvPacket({
             MP_ID: "muview.muenv:create",

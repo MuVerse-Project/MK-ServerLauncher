@@ -22,6 +22,12 @@ export class MuPacketRegistry {
             return new MuPacketError(data, reason);
         }
 
+        // 方向自检：接口会被擦除，只能读静态字段。收到 2core 的包说明对面发错了方向。
+        const direction = (ctor as unknown as { DIRECTION?: string }).DIRECTION;
+        if (direction === "2core") {
+            console.warn(`收到方向为 2core 的包：${data.MP_ID}，MuView 不该接收它`);
+        }
+
         return new ctor(data);
     }
 
