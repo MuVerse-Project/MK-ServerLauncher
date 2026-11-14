@@ -81,9 +81,9 @@ object MuServerService {
         val callback = ServerPool.getMuServer(msid)
         return if(callback.isOk){
             callback.value!!.stopMuServer(enforce)
-            MuMsgOKPacket("MuServer Started", cid)
+            MuMsgOKPacket("MuServer Stopped", cid)
         }else{
-            MuMsgErrPacket("MuServer Start Failed: ${callback.msg}", cid)
+            MuMsgErrPacket("MuServer Stop Failed: ${callback.msg}", cid)
         }
     }
 }
