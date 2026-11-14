@@ -8,7 +8,7 @@ import java.io.File
  *  - The Minecraft Server Type Marker, used to create, download and marked Minecraft Server in MuView.
  *  - Server Information Provider, including Download API, Available Version List API and Setting Files Structure.
  *
- * @since TinyNova V1 | DEV.1
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Cloud
  */
 abstract class MCJEServerType(

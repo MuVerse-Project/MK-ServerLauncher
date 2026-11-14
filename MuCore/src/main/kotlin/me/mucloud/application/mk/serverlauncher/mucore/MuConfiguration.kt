@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * 一份完整的设置快照。写入时整体替换，读侧永远拿到一致的组合。
  *
- * @since VoidLand V0 | DEV.2
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
  */
 data class MuSettings(
@@ -37,7 +37,7 @@ data class MuSettings(
  * 写回保留注释与键顺序（整段文本改写 + 临时文件原子替换），不用 NightConfig 的 save()——
  * 它会把整份 YAML 重写、注释与键顺序全丢。
  *
- * @since VoidLand V0 | DEV.2
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
  */
 class MuConfiguration {
@@ -104,7 +104,7 @@ class MuConfiguration {
     /**
      * 设置页将来统一走这里：改内存 + 落盘，一步到底。
      *
-     * @since VoidLand V0 | DEV.2
+     * @since VoidLand V0 | DEV.1
      */
     @Synchronized
     fun update(transform: (MuSettings) -> MuSettings) {

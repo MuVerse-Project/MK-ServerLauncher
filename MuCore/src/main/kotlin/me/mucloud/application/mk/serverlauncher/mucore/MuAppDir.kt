@@ -17,7 +17,7 @@ import java.nio.file.Paths
  * 3. 发行态：取 fat jar 的父目录（装在哪就跟着哪）
  * 4. 开发态：跟随当前工作目录——IDE 里就是「工作目录」那一栏，`gradlew run` 默认是项目根
  *
- * @since VoidLand V0 | DEV.2
+ * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
  */
 object MuAppDir {

@@ -29,7 +29,7 @@ import me.mucloud.application.mk.serverlauncher.muserver.ServerPool
 
 object MuCoreMini {
 
-    private val MuCoreInfo: AppInfoStatus = AppInfoStatus("MuCore Mini DEV", "TinyNova V0")
+    private val MuCoreInfo: AppInfoStatus = AppInfoStatus("MuCore DEV Beta", "VoidLand V0")
     private val MuCoreConfiguration: MuConfiguration = MuConfiguration()
     val gson: Gson = GsonBuilder()
         .setPrettyPrinting()
