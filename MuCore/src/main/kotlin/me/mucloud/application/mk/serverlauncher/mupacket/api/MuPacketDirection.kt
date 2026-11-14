@@ -8,7 +8,7 @@ package me.mucloud.application.mk.serverlauncher.mupacket.api
  *
  * 用法：包类与它的 `MuPacketInfo` 同时实现本接口，这样运行时也能靠 Info 判断方向。
  *
- * @since VoidLand V0 | DEV.3
+ * @since RainyZone V1 | DEV.6
  * @author Mu_Cloud
  */
 interface MuPacket2View
@@ -18,7 +18,7 @@ interface MuPacket2View
  *
  * 同上。双向包同时实现 [MuPacket2View] 与 [MuPacket2Core]，不另设第三接口。
  *
- * @since VoidLand V0 | DEV.3
+ * @since RainyZone V1 | DEV.6
  * @author Mu_Cloud
  */
 interface MuPacket2Core
