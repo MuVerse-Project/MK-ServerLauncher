@@ -80,7 +80,13 @@ class MuHTTPClientBase{
 
                 if (this.isMuPacketData(data)) {
                     try {
-                        response.data = MuPacketRegistry.parse(data);
+                        const packet = MuPacketRegistry.parse(data);
+                        response.data = packet;
+                        // 可执行包在解析后就地执行：MuMsgPacket 靠这一步弹 toast。
+                        // 以前只有零星几个调用方手动 execute()，别的入口就静默吞掉了。
+                        if (MuPacketRegistry.isExecutable(packet)) {
+                            void packet.execute();
+                        }
                     } catch (e) {
                         console.warn(`[MuPacketAxios] 解析失败 (MP_ID=${data.MP_ID}):`, e);
                     }
