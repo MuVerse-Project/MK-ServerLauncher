@@ -3,6 +3,7 @@ package me.mucloud.application.mk.serverlauncher.mupacket.muview
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2Core
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
@@ -13,7 +14,7 @@ import kotlin.random.Random
 class CreateMuServerPacket(
     val ms: MCJEServer,
     cid: Long = Random.nextCallId(),
-): AbstractMuPacket(createMuServerPacketInfo, cid), ExecutableMuPacket {
+): AbstractMuPacket(createMuServerPacketInfo, cid), ExecutableMuPacket, MuPacket2Core {
     override fun getData(): JsonObject = JsonObject().apply {
         add("MSI", gson.toJsonTree(ms.msi))
         add("MSSC", gson.toJsonTree(ms.mssc))

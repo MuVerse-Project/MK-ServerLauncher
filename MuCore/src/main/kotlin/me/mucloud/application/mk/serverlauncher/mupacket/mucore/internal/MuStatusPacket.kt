@@ -24,6 +24,6 @@ val muStatusPacketInfo: MuPacketInfo<MuStatusPacket> = object: MuPacketInfo<MuSt
 class MuStatusPacket(
     val status: StatusPacket,
     cid: Long = Random.nextCallId()
-): AbstractMuPacket(muStatusPacketInfo, cid) {
+): AbstractMuPacket(muStatusPacketInfo, cid), MuPacket2View {
     override fun getData(): JsonObject = gson.toJsonTree(status) as JsonObject
 }

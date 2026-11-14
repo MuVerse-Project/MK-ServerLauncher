@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2Core
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
@@ -16,7 +17,7 @@ class ImportMuServerPacket(
     val ev: JavaEnvironment,
     val mssc: MCJEServer.StartupConfig,
     cid: Long = Random.nextCallId(),
-): AbstractMuPacket(importMuServerPacketInfo, cid), ExecutableMuPacket {
+): AbstractMuPacket(importMuServerPacketInfo, cid), ExecutableMuPacket, MuPacket2Core {
     override fun getData(): JsonObject = JsonObject().apply {
         add("MSL", gson.toJsonTree(loc))
         add("EV_NAME", gson.toJsonTree(ev.name))

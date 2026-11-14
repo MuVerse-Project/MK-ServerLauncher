@@ -12,6 +12,7 @@ import me.mucloud.application.mk.serverlauncher.MuCoreMini
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.info
 import me.mucloud.application.mk.serverlauncher.mucore.external.MuLogger.warn
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2View
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerLogPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerStatusPacket
@@ -52,7 +53,7 @@ class MCJEServer(
             ServerStatus.RESTARTING -> info(LOG_PREFIX, "${msi.msid} has been restarted.")
             else -> info(LOG_PREFIX, "${msi.msid} Status changed from $prev to $current")
         }
-        CoroutineScope(Dispatchers.IO).launch { sendPacket(MuServerStatusPacket(this@MCJEServer, current)) }
+        CoroutineScope(Dispatchers.IO).launch { sendToView(MuServerStatusPacket(this@MCJEServer, current)) }
     }; private set
 
     // MuServer Process Lock
@@ -63,7 +64,7 @@ class MCJEServer(
     val muTaskPool: MutableList<String> = mutableListOf()
 
     // MuServer Event Channel
-    val msec: MutableSharedFlow<MuServerPacket> = MutableSharedFlow()
+    val msec: MutableSharedFlow<MuPacket2View> = MutableSharedFlow()
 
     // Server Process
     private lateinit var msp: Process
@@ -95,10 +96,10 @@ class MCJEServer(
                 val proc = ProcessBuilder(tsk).start()
                 proc.errorStream.bufferedReader().use {
                     info("MuServer-${msi.msid}-MuTask", "Running MuTask.")
-                    sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, it.readText()))
+                    sendToView(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, it.readText()))
                 }
                 if (proc.waitFor() == 0) {
-                    sendPacket(
+                    sendToView(
                         MuServerLogPacket(
                             this@MCJEServer,
                             MuServerLogPacket.LogLevel.INFO,
@@ -106,7 +107,7 @@ class MCJEServer(
                         )
                     )
                 } else {
-                    sendPacket(
+                    sendToView(
                         MuServerLogPacket(
                             this@MCJEServer,
                             MuServerLogPacket.LogLevel.ERROR,
@@ -160,7 +161,7 @@ class MCJEServer(
         }
     }
 
-    fun sendPacket(packet: MuServerPacket){
+    fun sendToView(packet: MuPacket2View){
         CoroutineScope(Dispatchers.IO).launch {
             msec.emit(packet)
         }
@@ -177,7 +178,7 @@ class MCJEServer(
             .redirectOutput(msi.msl.resolve("mksl-${msi.msid}.log"))
             .start()
             .also { p -> p.errorStream.bufferedReader().use { r ->
-                sendPacket(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, r.readText()))
+                sendToView(MuServerLogPacket(this@MCJEServer, MuServerLogPacket.LogLevel.INFO, r.readText()))
             }}
 
         mspl = MuServerProcessLck(msp.pid(), LocalDateTime.now())

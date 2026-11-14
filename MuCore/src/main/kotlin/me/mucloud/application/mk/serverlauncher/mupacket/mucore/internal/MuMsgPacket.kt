@@ -16,7 +16,7 @@ open class MuMsgPacket(
     val status: MuMsgStatus,
     val msg: String,
     cid: Long = Random.nextCallId(),
-): AbstractMuPacket(MuMsgPacketInfo, cid){
+): AbstractMuPacket(MuMsgPacketInfo, cid), MuPacket2View {
     override fun getData(): JsonObject = JsonObject().apply{
         addProperty("type", status.name)
         addProperty("msg", msg)
