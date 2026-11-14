@@ -17,14 +17,14 @@ open class MuMsgPacket(
     cid: Long = Random.nextCallId(),
 ): AbstractMuPacket(MuMsgPacketInfo, cid){
     override fun getData(): JsonObject = JsonObject().apply{
-        addProperty("status", status.name)
+        addProperty("type", status.name)
         addProperty("msg", msg)
     }
 }
 
 class MuMsgInfoPacket(msg: String): MuMsgPacket(MuMsgStatus.INFO, msg)
 class MuMsgWarnPacket(msg: String): MuMsgPacket(MuMsgStatus.WARN, msg)
-class MuMsgErrPacket(msg: String): MuMsgPacket(MuMsgStatus.ERR, msg)
+class MuMsgErrPacket(msg: String, cid: Long = Random.nextCallId()): MuMsgPacket(MuMsgStatus.ERR, msg, cid)
 class MuMsgOKPacket(msg: String): MuMsgPacket(MuMsgStatus.OK, msg)
 class MuMsgTipPacket(msg: String): MuMsgPacket(MuMsgStatus.TIP, msg)
 
