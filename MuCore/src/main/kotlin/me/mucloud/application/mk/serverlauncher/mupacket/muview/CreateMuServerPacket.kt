@@ -19,5 +19,5 @@ class CreateMuServerPacket(
         add("MSSC", gson.toJsonTree(ms.mssc))
     }
 
-    override fun execute(): MuPacket = MuServerService.createMuServer(ms)
+    override fun execute(): MuPacket = MuServerService.createMuServer(ms, getCallId())
 }

@@ -6,82 +6,84 @@ import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgEr
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgOKPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgWarnPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerInfoPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.muserver.MuServerListPacket
+import kotlin.random.Random
 
 object MuServerService {
 
     fun getServerList(): MuPacket = MuServerListPacket(ServerPool.getMuServerList())
 
-    fun getServerInfo(msid: String): MuPacket{
+    fun getServerInfo(msid: String, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.getMuServer(msid)
         return if(callback.isOk){
             MuServerInfoPacket(callback.value!!)
         }else{
-            MuMsgWarnPacket("Server info could not be registered: ${callback.msg}")
+            MuMsgWarnPacket("Server info could not be registered: ${callback.msg}", cid)
         }
     }
 
-    fun getAvailableServerTypes(): MuPacket{
+    fun getAvailableServerTypes(cid: Long = Random.nextCallId()): MuPacket{
         val target = ServerPool.getAvailableTypes()
-        return MuMsgOKPacket(gson.toJson(target))
+        return MuMsgOKPacket(gson.toJson(target), cid)
     }
 
-    fun createMuServer(ms: MCJEServer): MuPacket{
+    fun createMuServer(ms: MCJEServer, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.regMuServer(ms)
         return if(callback.isOk){
-            MuMsgOKPacket("MuServer Created")
+            MuMsgOKPacket("MuServer Created", cid)
         }else{
-            MuMsgErrPacket("MuServer Create Failed: ${callback.msg}")
+            MuMsgErrPacket("MuServer Create Failed: ${callback.msg}", cid)
         }
     }
 
-    fun importMuServer(ms: MCJEServer): MuPacket{
+    fun importMuServer(ms: MCJEServer, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.importMuServer(ms)
         return if(callback.isOk){
-            MuMsgOKPacket("MuServer Imported")
+            MuMsgOKPacket("MuServer Imported", cid)
         }else{
-            MuMsgErrPacket("MuServer Import Failed: ${callback.msg}")
+            MuMsgErrPacket("MuServer Import Failed: ${callback.msg}", cid)
         }
     }
 
-    fun deleteMuServer(msid: String): MuPacket{
+    fun deleteMuServer(msid: String, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.delMuServer(msid)
         return if(callback.isOk){
-            MuMsgOKPacket("MuServer Deleted")
+            MuMsgOKPacket("MuServer Deleted", cid)
         }else{
-            MuMsgErrPacket("MuServer Delete Failed: ${callback.msg}")
+            MuMsgErrPacket("MuServer Delete Failed: ${callback.msg}", cid)
         }
 
     }
 
-    fun removeMuServer(msid: String): MuPacket{
+    fun removeMuServer(msid: String, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.removeMuServer(msid)
         return if(callback.isOk){
-            MuMsgOKPacket("MuServer Removed")
+            MuMsgOKPacket("MuServer Removed", cid)
         }else{
-            MuMsgErrPacket("MuServer Remove Failed: ${callback.msg}")
+            MuMsgErrPacket("MuServer Remove Failed: ${callback.msg}", cid)
         }
     }
 
     // TODO: Unstable in ServerPool & MCJEServer
-    fun startMuServer(msid: String): MuPacket{
+    fun startMuServer(msid: String, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.getMuServer(msid)
         return if(callback.isOk){
             callback.value!!.startMuServer()
-            MuMsgOKPacket("MuServer Started")
+            MuMsgOKPacket("MuServer Started", cid)
         }else{
-            MuMsgErrPacket("MuServer Start Failed: ${callback.msg}")
+            MuMsgErrPacket("MuServer Start Failed: ${callback.msg}", cid)
         }
     }
 
     // TODO: Unstable in ServerPool & MCJEServer
-    fun stopMuServer(msid: String, enforce: Boolean): MuPacket{
+    fun stopMuServer(msid: String, enforce: Boolean, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.getMuServer(msid)
         return if(callback.isOk){
             callback.value!!.stopMuServer(enforce)
-            MuMsgOKPacket("MuServer Started")
+            MuMsgOKPacket("MuServer Started", cid)
         }else{
-            MuMsgErrPacket("MuServer Start Failed: ${callback.msg}")
+            MuMsgErrPacket("MuServer Start Failed: ${callback.msg}", cid)
         }
     }
 }
