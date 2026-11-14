@@ -20,16 +20,12 @@ export const refreshMuEnvList = () =>
 
 export const addMuEnv = (mp: CreateMuEnvPacket) => {
     return MuHttpClient.post<MuMsgPacket>("api/v1/env/create", mp)
-        .then<boolean>(r => {
-            r.execute()
-            return r.MP_DATA.status == 'OK'
-        })
+        .then<boolean>(r => r.MP_DATA.type === 'OK')
         .finally(() => refreshMuEnvList())
 }
 
 export const delMuEnv = (name: string) => {
-    MuHttpClient.get<MuMsgPacket>(`api/v1/env/delete/${name}`)
-        .then(r => r.execute())
+    return MuHttpClient.get<MuMsgPacket>(`api/v1/env/delete/${name}`)
         .finally(() => refreshMuEnvList())
 }
 
