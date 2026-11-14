@@ -3,10 +3,11 @@ package me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal
 import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2View
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 import kotlin.random.Random
 
-object MuMsgPacketInfo: MuPacketInfo<MuMsgPacket> {
+object MuMsgPacketInfo: MuPacketInfo<MuMsgPacket>, MuPacket2View {
     override val pid: String = "mucore.internal:msg"
     override fun fromData(data: JsonObject, cid: Long): MuMsgPacket = throw UnsupportedOperationException("Do not send MuMsgPacket to MuCore!")
 }

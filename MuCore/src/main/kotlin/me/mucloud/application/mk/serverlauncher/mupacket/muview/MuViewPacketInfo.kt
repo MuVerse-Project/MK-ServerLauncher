@@ -6,11 +6,12 @@ import me.mucloud.application.mk.serverlauncher.mucore.MuUtils.all
 import me.mucloud.application.mk.serverlauncher.muenv.EnvPool
 import me.mucloud.application.mk.serverlauncher.muenv.JavaEnvironment
 import me.mucloud.application.mk.serverlauncher.muenv.MuEnvironmentService
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2Core
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 import me.mucloud.application.mk.serverlauncher.muserver.MCJEServer
 import java.io.File
 
-val createMuServerPacketInfo = object: MuPacketInfo<CreateMuServerPacket>{
+val createMuServerPacketInfo: MuPacketInfo<CreateMuServerPacket> = object: MuPacketInfo<CreateMuServerPacket>, MuPacket2Core{
     override val pid: String = "muview.muserver:create"
 
     override fun fromData(
@@ -28,7 +29,7 @@ val createMuServerPacketInfo = object: MuPacketInfo<CreateMuServerPacket>{
     }
 }
 
-val importMuServerPacketInfo = object: MuPacketInfo<ImportMuServerPacket>{
+val importMuServerPacketInfo: MuPacketInfo<ImportMuServerPacket> = object: MuPacketInfo<ImportMuServerPacket>, MuPacket2Core{
     override val pid: String = "muview.muserver:import"
 
     override fun fromData(
@@ -48,7 +49,7 @@ val importMuServerPacketInfo = object: MuPacketInfo<ImportMuServerPacket>{
     }
 }
 
-val createMuEnvPacketInfo = object : MuPacketInfo<CreateMuEnvPacket> {
+val createMuEnvPacketInfo: MuPacketInfo<CreateMuEnvPacket> = object : MuPacketInfo<CreateMuEnvPacket>, MuPacket2Core {
     override val pid: String = "muview.muenv:create"
 
     override fun fromData(

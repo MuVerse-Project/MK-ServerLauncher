@@ -55,6 +55,14 @@ object MuPacketFactory {
             requestCid = cid
             val mpid = raw["MP_ID"].asString
             val type = MPPool[mpid] ?: error("Invalid MuPacket Raw >> Unregistered MP_ID ($mpid)")
+            // 方向由接口表达：MuCore 只收 MuPacket2Core 的包。以前这一步是 fromData 抛异常。
+            if (type !is MuPacket2Core) {
+                warn("MuPacketFactory", "Rejected $mpid: it is a MuPacket2View packet")
+                return MuMsgErrPacket(
+                    "Invalid packet direction: $mpid should be sent to MuView",
+                    cid,
+                )
+            }
             require(raw["MP_DATA"].isJsonObject) { "Invalid MuPacket Raw >> MP_DATA must be an json object" }
             val data = raw["MP_DATA"].asJsonObject
             return type.fromData(data, cid).also { callListeners(type, it) }

@@ -4,11 +4,12 @@ import com.google.gson.JsonObject
 import me.mucloud.application.mk.serverlauncher.MuCoreMini.gson
 import me.mucloud.application.mk.serverlauncher.mucore.external.StatusPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.AbstractMuPacket
+import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacket2View
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory.nextCallId
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketInfo
 import kotlin.random.Random
 
-val muStatusPacketInfo = object: MuPacketInfo<MuStatusPacket>{
+val muStatusPacketInfo: MuPacketInfo<MuStatusPacket> = object: MuPacketInfo<MuStatusPacket>, MuPacket2View{
     override val pid: String = "mucore.internal:status"
 
     override fun fromData(
