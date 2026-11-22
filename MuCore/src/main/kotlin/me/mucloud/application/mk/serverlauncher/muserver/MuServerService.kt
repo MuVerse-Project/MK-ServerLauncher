@@ -66,11 +66,11 @@ object MuServerService {
     }
 
     // TODO: Unstable in ServerPool & MCJEServer
-    fun startMuServer(msid: String, cid: Long = Random.nextCallId()): MuPacket{
+    suspend fun startMuServer(msid: String, cid: Long = Random.nextCallId()): MuPacket{
         val callback = ServerPool.getMuServer(msid)
         return if(callback.isOk){
             callback.value!!.startMuServer()
-            MuMsgOKPacket("MuServer Started", cid)
+            MuMsgOKPacket("MuServer Start Requested", cid)
         }else{
             MuMsgErrPacket("MuServer Start Failed: ${callback.msg}", cid)
         }

@@ -48,11 +48,11 @@ fun Application.initServerRoute() {
                 val msid: String by call.parameters
                 call.respond(MuServerService.startMuServer(msid))
             }
-            get("stop/{name}") {
+            get("stop/{msid}") {
                 val msid: String by call.parameters
                 call.respond(MuServerService.stopMuServer(msid, false))
             }
-            get("forcestop/{name}"){
+            get("forcestop/{msid}"){
                 val msid: String by call.parameters
                 call.respond(MuServerService.stopMuServer(msid, true))
             }
