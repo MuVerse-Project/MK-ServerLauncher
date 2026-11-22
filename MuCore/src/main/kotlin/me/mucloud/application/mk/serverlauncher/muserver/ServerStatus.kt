@@ -1,5 +1,30 @@
 package me.mucloud.application.mk.serverlauncher.muserver
 
+/**
+ * MuServer 的运行阶段。
+ *
+ * ## 状态 → 服务器实际在做什么
+ *
+ * | code | 状态 | 服务器实际阶段 | 谁推到这儿 |
+ * |---|---|---|---|
+ * | 0 | CREATING | 目录刚建好，core.jar 还没落地 | deploy() 入口 |
+ * | 1 | STOPPED | 没有进程，可安全 start / delete | onProcessExit / 初始态 |
+ * | 2 | PREPARING | 进程未起，正在跑 MuTasks（下载 / 装插件 / 改配置） | startMuServer() |
+ * | 8 | STARTING | 进程已起，Done 还没出现，正在加载世界 | runProcess() 返回后 |
+ * | 3 | RUNNING | 已匹配 Done，可以 say / stop | 收流协程 |
+ * | 4 | STOPPING | 已发出 stop，进程还没退 | stopMuServer() |
+ * | 5 | RESTARTING | 旧进程退出中，等它退完再起新的 | restartMuServer() |
+ * | 6 | IN_ERROR | Beta：报错自动重启中 | 自动重试逻辑 |
+ * | 7 | ERROR | 进程已死或命中失败关键字，需人工介入 | onProcessExit / 收流协程 |
+ *
+ * ## 两条铁律
+ *
+ * 1. **只有 onProcessExit 能把状态推到 STOPPED / ERROR**，同步段最多推到 STARTING / STOPPING
+ * 2. **STARTING → RUNNING 只认 stdout 的 Done 信号**，不靠计时器猜
+ *
+ * @since VoidLand V0 | DEV.1
+ * @author Mu_Mu
+ */
 enum class ServerStatus(val code: Int) {
 
     /**
@@ -20,7 +45,20 @@ enum class ServerStatus(val code: Int) {
     PREPARING(2),
 
     /**
+     * 进程已经拉起来，但**还没有收到** `Done (x.xs)!`
+     *
+     * 这段时间里服务端正在加载世界、初始化插件，可能持续几十秒到几分钟。
+     * 收到 stdout 上的 `Done (x.xs)!` 才转 [RUNNING]；命中失败关键字则转 [ERROR]。
+     *
+     * @since VoidLand V0 | DEV.1
+     */
+    STARTING(8),
+
+    /**
      * MuServer 运行中
+     *
+     * 判据：stdout 上出现了 `Done (x.xs)! For help, type "help"`。
+     * 只有到了这个状态才能 `say` / `stop`。
      */
     RUNNING(3), // 运行中
 
