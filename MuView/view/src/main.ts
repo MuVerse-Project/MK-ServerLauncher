@@ -3,7 +3,7 @@ import {createPinia} from 'pinia'
 import App from '@/App.vue'
 import {router} from '@/router'
 import {createI18n, useI18n} from "vue-i18n"
-import {Box, Home} from "@lucide/vue";
+import {Box, Home, Server} from "@lucide/vue";
 import {useStorage} from "@vueuse/core";
 import {useEnvImporterKey} from "@view/muenv/muenv.ts";
 
@@ -66,6 +66,7 @@ export const i18n = createI18n({
         },
         home: "主页面",
         env: "环境管理",
+        server: "服务器管理",
       },
       muPerformanceCard: {
         title: "总览",
@@ -164,7 +165,8 @@ export const i18n = createI18n({
           logout: "Sign out",
         },
         home: "Home",
-        env: "Environment"
+        env: "Environment",
+        server: "Servers"
       },
       muPerformanceCard: {
         title: "Overview",
@@ -241,6 +243,11 @@ export function useSidebarMenus() {
       title: t('sidebar.env'),
       url: '/env',
       icon: Box,
+    },
+    {
+      title: t('sidebar.server'),
+      url: '/server',
+      icon: Server,
     }
   ])
 
