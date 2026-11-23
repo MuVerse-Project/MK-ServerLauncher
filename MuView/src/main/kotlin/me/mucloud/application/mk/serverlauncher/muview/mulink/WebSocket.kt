@@ -9,6 +9,7 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import me.mucloud.application.mk.serverlauncher.mucore.external.SystemMonitor
+import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
 import me.mucloud.application.mk.serverlauncher.muserver.ServerPool
 import me.mucloud.application.mk.serverlauncher.muview.gson
@@ -45,11 +46,20 @@ fun Application.initWebSocket() {
                 serverInst.msec.collect { sendSerialized(it) }
             }
 
-            // 2) 客户端发来的包（目前只解析，后续可接控制指令）
+            // 2) 客户端发来的包：同样走 MuPacketAPI 反序列化。
+            //    MuPacketAPI4TS 与 MuPacketAPI4KT 同属 MuPacketAPI，前端发来的包也是
+            //    MP_ID / MP_DATA / CID 的结构；可执行包就地 execute()，回包推回前端。
             launch {
                 incoming.consumeAsFlow().collect { raw ->
-                    if (raw is Frame.Text) {
+                    if (raw !is Frame.Text) return@collect
+                    val parsed = runCatching {
                         MuPacketFactory.toPacket(gson.toJsonTree(raw.readText()).asJsonObject)
+                    }.getOrElse { e ->
+                        log.warn("WebSocket [Server] cannot parse client packet: ${e.message}")
+                        return@collect
+                    }
+                    if (parsed is ExecutableMuPacket) {
+                        sendSerialized(parsed.execute())
                     }
                 }
             }
