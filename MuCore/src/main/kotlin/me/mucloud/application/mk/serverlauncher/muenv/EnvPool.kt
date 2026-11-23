@@ -31,7 +31,7 @@ object EnvPool {
     
     init {
         if(!envFile.exists()) {
-            envFile.createNewFile()
+            envFile.writeText("[]", StandardCharsets.UTF_8) // 别建空文件，空文件会让 scanEnv 解析出 null
         }
         scanLocalJavaEnv()
         scanRuntimeJavaEnv()
@@ -65,15 +65,30 @@ object EnvPool {
      * @return List of JavaEnvironment, element deserialized by JavaEnvironmentAdapter
      */
     fun scanEnv() {
-        if(envFile.exists()){
+        if (!envFile.exists()) return
+        val text = runCatching { envFile.readText(StandardCharsets.UTF_8) }.getOrElse {
+            warn(LOG_PREFIX, "Cannot read ${envFile.name}: ${it.message}")
+            return
+        }
+        // 首次启动 createNewFile 建的是空文件，解析出来是 null，forEach 会抛 NPE。
+        // 空文件按「没有自定义环境」处理，不再让启动失败。
+        if (text.isBlank()) {
+            info(LOG_PREFIX, "${envFile.name} is empty, treat as no custom environment")
+            return
+        }
+        val loaded = runCatching {
             gson.fromJson<List<JavaEnvironment>>(
-                envFile.readText(StandardCharsets.UTF_8),
+                text,
                 object : TypeToken<List<JavaEnvironment>>(){}.type
-            ).forEach{ e ->
-                if(e.name != "Runtime" && e.name != "SysEnv"){
-                    info(LOG_PREFIX, "Registered environment named ${e.name}, path ${e.path}")
-                    addEnv(e.name, e.path.toString())
-                }
+            )
+        }.getOrElse {
+            warn(LOG_PREFIX, "Cannot parse ${envFile.name}: ${it.message}")
+            return
+        } ?: return
+        loaded.forEach { e ->
+            if (e.name != "Runtime" && e.name != "SysEnv") {
+                info(LOG_PREFIX, "Registered environment named ${e.name}, path ${e.path}")
+                addEnv(e.name, e.path.toString())
             }
         }
     }
