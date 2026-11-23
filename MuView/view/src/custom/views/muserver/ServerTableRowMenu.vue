@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@shadcn/dialog";
+import {useRouter} from "vue-router";
 import {deleteMuServer, startMuServer, stopMuServer} from "@view/muserver/server.ts";
 
 const props = defineProps<{
@@ -30,10 +31,14 @@ const onStop = () => {
 const onForceStop = () => {
   stopMuServer(props.msid, true)
 }
+
+const router = useRouter()
+const onDetail = () => router.push(`/server/${encodeURIComponent(props.msid)}`)
 </script>
 
 <template>
   <div class="flex flex-row gap-2 justify-end items-center">
+    <Button variant="ghost" size="sm" @click="onDetail">详情</Button>
     <Button variant="outline" size="sm" :disabled="!props.stopped" @click="onStart">启动</Button>
     <Button variant="outline" size="sm" :disabled="!props.running" @click="onStop">停止</Button>
     <Button variant="ghost" size="sm" @click="onForceStop">强制关闭</Button>

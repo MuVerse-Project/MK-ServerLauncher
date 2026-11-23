@@ -49,6 +49,11 @@ export const router = createRouter({
           name: 'Server',
           component: () => import('@view/muserver/ServerView.vue'),
         },
+        {
+          path: 'server/:msid',
+          name: 'ServerDetail',
+          component: () => import('@view/muserver/ServerDetailView.vue'),
+        },
       ],
     },
   ],
