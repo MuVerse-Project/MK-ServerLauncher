@@ -14,6 +14,9 @@ import kotlin.time.Duration.Companion.seconds
  * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
  */
+/** MuView 默认只绑本机：部署到云服务器时不显式改配置，就不会把端口暴露到公网。 */
+const val DEFAULT_MUVIEW_HOST: String = "127.0.0.1"
+
 data class MuSettings(
     val configVersion: Int,
     val serverFolder: String,
@@ -21,7 +24,20 @@ data class MuSettings(
     val monitorIntervalSeconds: Long,
     val muCorePort: Int,
     val muViewPort: Int,
-    val muViewAccessToken: String
+    val muViewAccessToken: String,
+    /**
+     * MuView 监听的地址。默认只绑本机；要对外提供服务时显式改成 `0.0.0.0`。
+     *
+     * 部署在云服务器上时，这里保持默认，由反向代理转发进来最安全。
+     */
+    val muViewHost: String = DEFAULT_MUVIEW_HOST,
+    /**
+     * 允许跨域访问的 Origin 白名单，逗号分隔；空 = 不放行任何跨域。
+     *
+     * 前端与 API 同源（含反向代理）时根本不会走 CORS，所以默认空即可。
+     * 只有当别的站点要调 MKSL 的 API 时才需要显式列在这里。
+     */
+    val muViewCorsOrigins: String = ""
 )
 
 /**
@@ -78,6 +94,13 @@ class MuConfiguration {
      */
     fun getMuViewAccessToken(): String = snapshot.muViewAccessToken
 
+    /** MuView 监听地址；默认 127.0.0.1，要对外服务由用户在配置里显式改成 0.0.0.0。 */
+    fun getMuViewHost(): String = snapshot.muViewHost
+
+    /** 允许跨域的 Origin 列表；空表示不放行任何跨域（同源部署无需配置）。 */
+    fun getMuViewCorsOrigins(): List<String> =
+        snapshot.muViewCorsOrigins.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+
     fun getServerFolder(): File = resolveFolder(snapshot.serverFolder)
 
     fun getLogFolder(): File = resolveFolder(snapshot.logFolder)
@@ -123,7 +146,9 @@ class MuConfiguration {
         monitorIntervalSeconds = readLong(KEY_MONITOR_INTERVAL, DEFAULT_MONITOR_INTERVAL).coerceAtLeast(1),
         muCorePort = readPort(KEY_MUCORE_PORT, DEFAULT_MUCORE_PORT),
         muViewPort = readPort(KEY_MUVIEW_PORT, DEFAULT_MUVIEW_PORT),
-        muViewAccessToken = readString(KEY_MUVIEW_TOKEN, "")
+        muViewAccessToken = readString(KEY_MUVIEW_TOKEN, ""),
+        muViewHost = readString(KEY_MUVIEW_HOST, DEFAULT_MUVIEW_HOST).ifBlank { DEFAULT_MUVIEW_HOST },
+        muViewCorsOrigins = readString(KEY_MUVIEW_CORS_ORIGINS, "").trim(),
     )
 
     private fun readRaw(key: String): Any? = runCatching { fileConfig.get<Any>(key) }.getOrNull()
@@ -179,6 +204,8 @@ class MuConfiguration {
         put(KEY_MUCORE_PORT, next.muCorePort.toString())
         put(KEY_MUVIEW_PORT, next.muViewPort.toString())
         put(KEY_MUVIEW_TOKEN, quote(next.muViewAccessToken))
+        put(KEY_MUVIEW_HOST, quote(next.muViewHost))
+        put(KEY_MUVIEW_CORS_ORIGINS, quote(next.muViewCorsOrigins))
 
         configFile.parent?.let { Files.createDirectories(it) }
         val tmp = configFile.resolveSibling("$FILE_NAME.tmp")
@@ -212,6 +239,8 @@ class MuConfiguration {
         private const val KEY_MUCORE_PORT = "MuCorePort"
         private const val KEY_MUVIEW_PORT = "MuViewPort"
         private const val KEY_MUVIEW_TOKEN = "MuViewAccessToken"
+        private const val KEY_MUVIEW_HOST = "MuViewHost"
+        private const val KEY_MUVIEW_CORS_ORIGINS = "MuViewCorsOrigins"
 
         private const val DEFAULT_CONFIG_VERSION = 0
         private const val DEFAULT_SERVER_FOLDER = "servers"
@@ -219,5 +248,6 @@ class MuConfiguration {
         private const val DEFAULT_MONITOR_INTERVAL = 3L
         private const val DEFAULT_MUCORE_PORT = 20040
         private const val DEFAULT_MUVIEW_PORT = 20038
+
     }
 }

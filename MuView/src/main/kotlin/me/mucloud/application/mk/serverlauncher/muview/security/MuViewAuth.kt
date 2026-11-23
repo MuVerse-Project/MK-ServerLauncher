@@ -52,8 +52,8 @@ object MuViewAuth {
     /** 会话有效期:12 小时。 */
     const val SESSION_MAX_AGE_SECONDS: Int = 12 * 60 * 60
 
-    /** 用户自定义令牌的最小长度。 */
-    const val MIN_TOKEN_LENGTH: Int = 10
+    /** 用户自定义令牌的最小长度；12 位纯数字几小时就能爆破，提到 16 位并限制字符集。 */
+    const val MIN_TOKEN_LENGTH: Int = 16
 
     private val logger = LoggerFactory.getLogger(MuViewAuth::class.java)
 

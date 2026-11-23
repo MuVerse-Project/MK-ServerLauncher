@@ -8,11 +8,16 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgErrPacket
 
+private val guardLogger = org.slf4j.LoggerFactory.getLogger("MuViewAccessGuard")
+
 /**
  * ## 访问守卫
  *
  * 只拦截**接口与 WebSocket**;静态资源与 SPA 路由放行,
  * 登录界面由前端自己渲染(与主界面同一套主题与组件)。
+ *
+ * WebSocket 握手同样经过这里:放行与拒绝都记一条(来源 IP + 路径 + 结果),
+ * 免得事后只知道"有人被挡了",查不到是谁、从哪来。
  *
  * @since VoidLand V0 | DEV.1
  * @author Mu_Mu
@@ -21,7 +26,24 @@ val MuViewAccessGuard = createApplicationPlugin("MuViewAccessGuard") {
     onCall { call ->
         if (!MuViewAuth.enabled) return@onCall
         if (!MuViewAuth.requiresAuth(call)) return@onCall
-        if (MuViewAuth.isAuthorized(call)) return@onCall
+        val upgrade = call.request.headers[HttpHeaders.Upgrade]
+        val isWs = upgrade?.equals("websocket", ignoreCase = true) == true
+        if (MuViewAuth.isAuthorized(call)) {
+            if (isWs) {
+                guardLogger.info(
+                    "[MuView] WS 握手放行 来源={} 路径={}",
+                    call.request.local.remoteHost,
+                    call.request.path(),
+                )
+            }
+            return@onCall
+        }
+        guardLogger.warn(
+            "[MuView] 拒绝访问({}) 来源={} 路径={}",
+            if (isWs) "WS" else "HTTP",
+            call.request.local.remoteHost,
+            call.request.path(),
+        )
         call.respond(
             HttpStatusCode.Unauthorized,
             MuMsgErrPacket("Unauthorized: MuView access token required."),

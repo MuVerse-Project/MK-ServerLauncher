@@ -46,7 +46,13 @@ fun main() {
         module = Application::module,
         factory = Netty,
         environment = applicationEnvironment { log = LoggerFactory.getLogger("MuView") },
-        configure = { connector { port = MuView_Port; host = "0.0.0.0" } }
+        configure = {
+            // 监听地址由配置决定：默认 127.0.0.1，只有显式配成 0.0.0.0 才对外。
+            connector {
+                port = MuView_Port
+                host = MuCore.getMuCoreConfig().getMuViewHost()
+            }
+        }
     )
     MuView.addShutdownHook(MuCore::stop)
     MuView.monitor.subscribe(ApplicationStopping) { MuCore.stop() }
@@ -55,13 +61,21 @@ fun main() {
 
 fun Application.installPlugins(){
     install(CORS){
-        anyHost()
-        allowMethod(HttpMethod.Post)
-        allowMethod(HttpMethod.Get)
-        allowMethod(HttpMethod.Options)
-        allowHeader("Content-Type")
-        allowSameOrigin = true
-        allowNonSimpleContentTypes = true
+        // 默认不放行任何跨域：前端与 API 同源（含反向代理）时压根不会走 CORS，
+        // 真需要跨域由用户在 MuViewCorsOrigins 里显式列出 origin，不写死 anyHost()。
+        val origins = MuCore.getMuCoreConfig().getMuViewCorsOrigins()
+        if (origins.isNotEmpty()) {
+            origins.forEach { allowHost(it, schemes = listOf("http", "https")) }
+            allowMethod(HttpMethod.Get)
+            allowMethod(HttpMethod.Post)
+            allowMethod(HttpMethod.Put)
+            allowMethod(HttpMethod.Delete)
+            allowMethod(HttpMethod.Options)
+            allowHeader("Content-Type")
+            allowSameOrigin = false
+            allowNonSimpleContentTypes = true
+            allowCredentials = true
+        }
     }
     install(ContentNegotiation){
         gson{
