@@ -9,6 +9,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.util.getValue
 import me.mucloud.application.mk.serverlauncher.mupacket.api.ExecutableMuPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.api.MuPacketFactory
+import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgErrPacket
 import me.mucloud.application.mk.serverlauncher.mupacket.mucore.internal.MuMsgOKPacket
 import me.mucloud.application.mk.serverlauncher.muserver.MuServerService
 import me.mucloud.application.mk.serverlauncher.muview.MuView
@@ -26,9 +27,23 @@ fun Application.initServerRoute() {
          * @author Mu_Mu
          */
         post("muclose") {
+            // 这条等于远程关服务:令牌一旦泄露就能被顺手关掉,所以只认本机来源。
+            val from = call.request.local.remoteHost.trim().removePrefix("/").removeSurrounding("[", "]").lowercase()
+            val loopback = from == "localhost" || from == "::1" || from == "0:0:0:0:0:0:0:1" ||
+                from.startsWith("127.") || from.startsWith("::ffff:127.") ||
+                runCatching { java.net.InetAddress.getByName(from).isLoopbackAddress }.getOrDefault(false)
+            if (!loopback) {
+                org.slf4j.LoggerFactory.getLogger("MuView")
+                    .warn("[MuView] 拒绝远程关闭请求 来源={}", call.request.local.remoteHost)
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    MuMsgErrPacket("MuView can only be closed from the local machine."),
+                )
+                return@post
+            }
             call.respond(MuMsgOKPacket("MuView is shutting down."))
             MuView.stop()
-        }
+ }
         route("api/v1/server") {
             get("availableType") {
                 call.respond(MuServerService.getAvailableServerTypes())
